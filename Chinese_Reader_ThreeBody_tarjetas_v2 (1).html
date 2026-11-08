@@ -1,0 +1,6430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中文 Reader · 三体</title>
+<meta name="theme-color" content="#4f6df5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --bg:#f4f6fa;
+  --card:#fff;
+  --text:#202124;
+  --muted:#747c8b;
+  --border:#e4e7ed;
+  --primary:#4f6df5;
+  --primarySoft:#eef1ff;
+  --saved:#ffe590;
+  --savedBorder:#e9bf3e;
+  --success:#dff6e6;
+  --danger:#ffe1e1;
+  --chengyu:#8b5cf6;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 24px;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+}
+
+.logo{
+  font-size:20px;
+  font-weight:900;
+}
+
+.top-nav{
+  display:flex;
+  gap:8px;
+}
+
+.nav-btn{
+  border:0;
+  background:transparent;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:750;
+  color:#697181;
+  cursor:pointer;
+}
+
+.nav-btn.active{
+  background:var(--primarySoft);
+  color:var(--primary);
+}
+
+.header-count{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.view{display:none}
+.view.active{display:block}
+
+.reader-layout{
+  max-width:1320px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 330px;
+}
+
+.reader-main{
+  padding:35px;
+}
+
+.reader-card{
+  max-width:870px;
+  margin:auto;
+  padding:40px 46px;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 6px 24px rgba(0,0,0,.05);
+}
+
+.lesson-label{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+
+.reader-card h1{
+  margin:7px 0 8px;
+  font-size:34px;
+}
+
+.page-number{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:20px;
+}
+
+.instructions{
+  margin-bottom:24px;
+  padding:15px 17px;
+  background:#f3f6ff;
+  border:1px solid #e1e7ff;
+  border-radius:13px;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.page-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:26px;
+}
+
+.page-nav.bottom{
+  margin-top:30px;
+  margin-bottom:0;
+}
+
+.page-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:750;
+}
+
+.page-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+.page-indicator{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:750;
+}
+
+#reader{
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:25px;
+  line-height:2.1;
+  white-space:normal;
+}
+
+.word{
+  padding:3px 2px;
+  border-radius:5px;
+  cursor:pointer;
+  transition:.12s;
+}
+
+.word:hover{
+  background:#e7f2ff;
+}
+
+.word.saved{
+  background:var(--saved);
+  box-shadow:inset 0 -2px 0 var(--savedBorder);
+}
+
+.word.chengyu{
+  text-decoration:underline dotted var(--chengyu);
+  text-decoration-thickness:2px;
+  text-underline-offset:5px;
+}
+
+.glossary-panel{
+  position:sticky;
+  top:68px;
+  height:calc(100vh - 68px);
+  overflow:auto;
+  padding:24px;
+  background:#fff;
+  border-left:1px solid var(--border);
+}
+
+.glossary-panel h2{
+  margin:0 0 5px;
+}
+
+.glossary-sub{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+  margin-bottom:19px;
+}
+
+.glossary-card{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  padding:15px 0;
+  border-bottom:1px solid #eef0f3;
+}
+
+.glossary-word{
+  font-size:23px;
+  font-weight:850;
+}
+
+.glossary-pinyin{
+  color:#55749c;
+  font-size:13px;
+}
+
+.glossary-translation{
+  margin-top:5px;
+  font-size:14px;
+}
+
+.type-badge{
+  display:inline-block;
+  margin-top:7px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:850;
+  background:#f1edff;
+  color:#7047d7;
+}
+
+.type-badge.expression{
+  background:#e8f4ff;
+  color:#26639a;
+}
+
+.type-badge.collocation{
+  background:#eaf8ee;
+  color:#2f7a49;
+}
+
+.type-badge.colloquial{
+  background:#fff2df;
+  color:#9a5c13;
+}
+
+.small-icon-btn{
+  border:0;
+  background:#f2f4f7;
+  width:34px;
+  height:34px;
+  border-radius:8px;
+  cursor:pointer;
+  margin-bottom:4px;
+}
+
+.tooltip{
+  position:fixed;
+  display:none;
+  z-index:1000;
+  width:310px;
+  padding:16px;
+  background:#202936;
+  color:#fff;
+  border-radius:15px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+}
+
+.tooltip-close{
+  position:absolute;
+  right:8px;
+  top:6px;
+  border:0;
+  background:transparent;
+  color:#aaa;
+  font-size:23px;
+  cursor:pointer;
+}
+
+.tooltip-word-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding-right:25px;
+}
+
+.tooltip-word{
+  font-size:27px;
+  font-weight:900;
+}
+
+.tooltip-pinyin{
+  color:#7dc6ff;
+  font-size:16px;
+}
+
+.tooltip-translation{
+  margin-top:8px;
+  line-height:1.45;
+}
+
+.tooltip-type{
+  display:none;
+  width:max-content;
+  max-width:100%;
+  margin-top:9px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#5e43b6;
+  color:#fff;
+  font-size:11px;
+  font-weight:850;
+}
+
+.tooltip-note{
+  display:none;
+  margin-top:9px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.10);
+  color:#dce5f2;
+  font-size:12px;
+  line-height:1.45;
+}
+
+.audio-mini{
+  border:0;
+  background:#344154;
+  color:#fff;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.tooltip-save{
+  width:100%;
+  margin-top:13px;
+  border:0;
+  padding:10px;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.review-page{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 20px;
+}
+
+/* ===== MODO REPASO A PANTALLA COMPLETA ===== */
+body.review-focus{overflow:hidden;}
+body.review-focus > header{display:none;}
+.review-fullscreen.active{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:block;
+  background:var(--bg);
+  overflow:auto;
+}
+.review-stage{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:78px 28px 36px;
+}
+.review-fullscreen .quiz-card{
+  width:min(1080px,100%);
+  min-height:min(680px,calc(100vh - 110px));
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:48px 56px;
+}
+.review-menu-toggle{
+  position:fixed;
+  top:18px;
+  left:18px;
+  z-index:530;
+  width:52px;
+  height:52px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  font-size:28px;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.review-mode-title{
+  position:fixed;
+  top:28px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:510;
+  font-size:18px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.review-menu-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:540;
+  background:rgba(0,0,0,.28);
+  opacity:0;
+  pointer-events:none;
+  transition:.2s;
+}
+.review-menu{
+  position:fixed;
+  top:0;
+  bottom:0;
+  left:0;
+  z-index:550;
+  width:min(340px,86vw);
+  padding:18px;
+  background:#fff;
+  box-shadow:12px 0 40px rgba(0,0,0,.16);
+  transform:translateX(-105%);
+  transition:.22s ease;
+  overflow:auto;
+}
+.review-menu.open{transform:translateX(0);}
+.review-menu-backdrop.open{opacity:1;pointer-events:auto;}
+.review-menu-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:24px;
+  padding:8px 4px 18px;
+}
+.review-menu-close{
+  border:0;
+  background:#f2f4f7;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  font-size:28px;
+  cursor:pointer;
+}
+.review-menu .review-menu-item{
+  width:100%;
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:7px 0;
+  padding:12px 15px;
+  border:2px solid transparent;
+  border-radius:13px;
+  background:#f7f8fb;
+  font-size:17px;
+  font-weight:800;
+  text-align:left;
+  cursor:pointer;
+}
+.review-menu .review-menu-item.active{
+  border-color:var(--primary);
+  background:var(--primarySoft);
+  color:var(--primary);
+}
+.review-menu-divider{height:1px;background:var(--border);margin:16px 0;}
+.review-menu .review-exit{background:#fff;}
+.review-page-filter{
+  margin:14px 0 6px;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#f8f9fc;
+}
+.review-page-filter label{
+  display:block;
+  margin-bottom:7px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+.review-page-filter select{
+  width:100%;
+  padding:10px 11px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#fff;
+  color:var(--text);
+  font:inherit;
+  font-weight:750;
+}
+
+.review-page-filter-visible{
+  position:fixed;
+  top:14px;
+  right:18px;
+  z-index:530;
+  width:190px;
+  margin:0;
+  padding:7px 9px;
+  background:#fff;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.review-page-filter-visible label{
+  margin-bottom:3px;
+  font-size:10px;
+}
+.review-page-filter-visible select{
+  padding:7px 9px;
+}
+.practice-status{
+  max-width:680px;
+  width:100%;
+  margin:0 auto 20px;
+  padding:13px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border:1px solid #dfe5f5;
+  border-radius:13px;
+  background:#f5f7ff;
+  font-size:15px;
+  font-weight:800;
+}
+.mastery-dots{display:inline-flex;gap:5px;vertical-align:middle;margin-left:7px;}
+.mastery-dot{
+  width:13px;
+  height:13px;
+  display:inline-block;
+  border:2px solid #aeb6c4;
+  border-radius:50%;
+  background:#fff;
+}
+.mastery-dot.filled{border-color:#25a55f;background:#25a55f;box-shadow:0 0 0 2px #dff6e8;}
+.current-word-progress{text-align:center;font-size:17px;font-weight:850;margin:-10px 0 18px;}
+.completion-card{text-align:center;padding:35px 10px;}
+.completion-icon{font-size:72px;margin-bottom:8px;}
+.secondary-btn-wide{
+  width:100%;margin-top:10px;padding:13px;border:1px solid var(--border);
+  background:#fff;border-radius:11px;cursor:pointer;font-weight:800;font-size:16px;
+}
+.word-list-wrap{width:100%;max-width:920px;margin:auto;}
+.word-list-summary{text-align:center;color:var(--muted);margin-bottom:18px;}
+.word-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.word-list-card{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff;}
+.word-list-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:9px;}
+.word-list-word{font-size:27px;font-weight:900;}
+.word-list-translation{color:#404756;line-height:1.45;}
+.word-list-page{color:var(--muted);font-size:12px;font-weight:750;margin-top:5px;}
+.word-list-progress{margin-top:12px;padding-top:10px;border-top:1px solid #eef0f3;display:grid;gap:7px;}
+.word-progress-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:750;}
+.word-complete-badge{color:#17864a;background:#e5f8ec;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:850;}
+
+.review-hero,
+.quiz-card{
+  background:#fff;
+  border-radius:20px;
+  padding:27px;
+  box-shadow:0 6px 24px rgba(0,0,0,.05);
+}
+
+.mode-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+  margin:20px 0;
+}
+
+.mode-btn{
+  min-height:105px;
+  border:2px solid transparent;
+  background:#fff;
+  border-radius:15px;
+  cursor:pointer;
+}
+
+.mode-btn.active{
+  border-color:var(--primary);
+  background:var(--primarySoft);
+}
+
+.mode-icon{font-size:25px}
+.mode-title{font-weight:800;margin-top:5px}
+.mode-sub{font-size:11px;color:var(--muted)}
+
+.question-label{
+  text-align:center;
+  color:var(--muted);
+  font-size:22px;
+  font-weight:750;
+}
+
+.question-main{
+  text-align:center;
+  font-size:64px;
+  font-weight:900;
+  line-height:1.25;
+  margin:24px 15px;
+}
+
+.question-secondary{
+  text-align:center;
+  color:var(--muted);
+  font-size:24px;
+  line-height:1.55;
+  margin-bottom:28px;
+}
+
+.options{
+  max-width:680px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.option{
+  min-height:78px;
+  padding:18px 22px;
+  border:2px solid var(--border);
+  background:#fff;
+  font-size:22px;
+  line-height:1.35;
+  font-weight:700;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.option.correct{
+  background:var(--success);
+  border-color:#5ba975;
+}
+
+.option.wrong{
+  background:var(--danger);
+  border-color:#de7070;
+}
+
+.answer-area{
+  max-width:600px;
+  margin:auto;
+}
+
+.answer-input{
+  width:100%;
+  padding:15px;
+  border:2px solid var(--border);
+  border-radius:13px;
+  font-size:24px;
+  text-align:center;
+}
+
+.primary-btn{
+  width:100%;
+  margin-top:12px;
+  padding:13px;
+  border:0;
+  background:var(--primary);
+  color:#fff;
+  border-radius:11px;
+  cursor:pointer;
+  font-weight:800;
+  font-size:20px;
+}
+
+.feedback{
+  max-width:680px;
+  margin:20px auto;
+  padding:14px;
+  border-radius:12px;
+}
+
+.feedback.correct{background:var(--success)}
+.feedback.wrong{background:var(--danger)}
+
+.big-audio-btn{
+  display:block;
+  margin:20px auto;
+  width:100px;
+  height:100px;
+  border:0;
+  border-radius:50%;
+  background:var(--primary);
+  color:#fff;
+  font-size:38px;
+  cursor:pointer;
+}
+
+.writing-pad{
+  max-width:400px;
+  aspect-ratio:1;
+  margin:auto;
+  border:3px solid #ddd;
+  border-radius:14px;
+  background:#fff;
+}
+
+#writingCanvas{
+  width:100%;
+  height:100%;
+  touch-action:none;
+}
+
+@media(max-width:900px){
+  .review-stage{padding:72px 12px 18px;align-items:stretch;}
+  .review-fullscreen .quiz-card{
+    min-height:calc(100vh - 90px);
+    border-radius:18px;
+    padding:30px 18px;
+  }
+  .review-menu-toggle{top:12px;left:12px;width:48px;height:48px;font-size:25px;}
+  .review-mode-title{top:23px;font-size:16px;max-width:62vw;overflow:hidden;text-overflow:ellipsis;}
+  .review-page-filter-visible{top:76px;right:12px;left:12px;width:auto;}
+  .review-stage{padding-top:150px;}
+  .question-label{font-size:19px;}
+  .question-main{font-size:48px;margin:22px 8px;}
+  .question-secondary{font-size:21px;}
+  .option{font-size:20px;min-height:70px;}
+  .answer-input{font-size:22px;}
+  .practice-status{font-size:13px;align-items:flex-start;flex-direction:column;}
+  .word-list-grid{grid-template-columns:1fr;}
+  .word-list-word{font-size:24px;}
+
+  header{
+    padding:8px 10px;
+  }
+
+  .logo{
+    font-size:16px;
+  }
+
+  .header-count{
+    display:none;
+  }
+
+  .reader-layout{
+    display:block;
+  }
+
+  .reader-main{
+    padding:13px;
+  }
+
+  .reader-card{
+    padding:23px 18px;
+  }
+
+  #reader{
+    font-size:23px;
+  }
+
+  .glossary-panel{
+    position:relative;
+    top:0;
+    height:auto;
+    border-left:0;
+  }
+
+  .tooltip{
+    width:calc(100% - 24px);
+    left:12px!important;
+    top:auto!important;
+    bottom:12px;
+  }
+
+  .mode-grid{
+    display:flex;
+    overflow-x:auto;
+  }
+
+  .mode-btn{
+    flex:0 0 145px;
+  }
+
+  .options{
+    grid-template-columns:1fr;
+  }
+}
+
+.word.auto-word{
+  text-decoration:underline dotted #b9c1cf;
+  text-underline-offset:4px;
+}
+.auth-overlay{
+  position:fixed;inset:0;z-index:5000;background:rgba(244,246,250,.96);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-overlay.hidden{display:none}
+.auth-card{width:min(430px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:26px;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.auth-card h2{margin:0 0 8px}
+.auth-card p{color:var(--muted);line-height:1.5}
+.auth-card input{width:100%;padding:13px 14px;margin:6px 0;border:1px solid var(--border);border-radius:11px;font-size:16px}
+.auth-actions{display:grid;gap:8px;margin-top:10px}
+.secondary-btn{width:100%;padding:11px;border:1px solid var(--border);background:#fff;border-radius:10px;cursor:pointer;font-weight:750}
+.auth-status{min-height:22px;margin-top:8px;font-size:13px}
+.account-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.install-btn,.account-btn{border:1px solid var(--border);background:#fff;border-radius:9px;padding:8px 10px;cursor:pointer;font-weight:750;font-size:12px}
+.sync-status{font-size:11px;color:var(--muted)}
+@media(max-width:900px){.account-tools{gap:4px}.install-btn,.account-btn{padding:7px 8px}.sync-status{display:none}}
+
+/* ===== ESCRITURA A MANO EN CELULAR ===== */
+.handwriting-instructions{
+  max-width:680px;
+  margin-left:auto;
+  margin-right:auto;
+  font-size:18px;
+}
+.handwriting-pad-mobile{
+  width:min(520px,100%);
+  max-width:520px;
+  aspect-ratio:1;
+  margin:18px auto;
+  overflow:hidden;
+}
+.handwriting-pad-mobile canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none;
+  -ms-touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+}
+@media(max-width:900px){
+  .handwriting-pad-mobile{
+    width:min(92vw,520px);
+    max-width:none;
+    aspect-ratio:1;
+  }
+  .handwriting-prompt{
+    font-size:36px;
+    margin-top:14px;
+    margin-bottom:14px;
+  }
+  .handwriting-instructions{
+    font-size:16px;
+    margin-bottom:16px;
+  }
+}
+
+/* ===== TARJETAS DE REPASO ===== */
+.study-flashcard{
+  width:min(720px,100%);
+  min-height:390px;
+  margin:10px auto 18px;
+  border:2px solid var(--border);
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 10px 30px rgba(0,0,0,.07);
+  cursor:pointer;
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.study-flashcard-face{
+  min-height:390px;
+  padding:34px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.flashcard-word-only{
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:clamp(58px,10vw,105px);
+  font-weight:900;
+  line-height:1.2;
+}
+.flashcard-back-word{
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:58px;
+  font-weight:900;
+}
+.flashcard-back-pinyin{
+  margin-top:12px;
+  font-size:27px;
+  color:#55749c;
+}
+.flashcard-back-translation{
+  margin-top:18px;
+  max-width:620px;
+  font-size:26px;
+  line-height:1.45;
+  font-weight:750;
+}
+.flashcard-audio{
+  width:72px;
+  height:72px;
+  margin:24px auto 0;
+  font-size:28px;
+}
+.flashcard-hint{
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:750;
+  margin-bottom:18px;
+}
+.flashcard-page-note{
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:14px;
+}
+@media(max-width:900px){
+  .study-flashcard,
+  .study-flashcard-face{
+    min-height:52vh;
+  }
+  .study-flashcard-face{
+    padding:24px 18px;
+  }
+  .flashcard-word-only{
+    font-size:clamp(54px,18vw,90px);
+  }
+  .flashcard-back-word{
+    font-size:52px;
+  }
+  .flashcard-back-pinyin{
+    font-size:23px;
+  }
+  .flashcard-back-translation{
+    font-size:22px;
+  }
+}
+
+/* ===== BARRA DE TARJETAS V2 ===== */
+.flashcard-toolbar{
+  width:min(720px,100%);
+  margin:0 auto 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.flashcard-back-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:11px 16px;
+  border-radius:11px;
+  font-weight:850;
+  cursor:pointer;
+}
+.flashcard-counter-box{
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  padding:9px 13px;
+  border-radius:12px;
+  background:var(--primarySoft);
+  color:var(--primary);
+  text-align:right;
+}
+.flashcard-counter-box strong{
+  font-size:22px;
+}
+.flashcard-counter-box span{
+  font-size:13px;
+  font-weight:800;
+}
+@media(max-width:600px){
+  .flashcard-toolbar{
+    align-items:stretch;
+  }
+  .flashcard-back-btn{
+    flex:0 0 auto;
+  }
+  .flashcard-counter-box{
+    flex:1;
+    justify-content:flex-end;
+  }
+  .flashcard-counter-box span{
+    font-size:12px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="authOverlay" class="auth-overlay hidden">
+  <div class="auth-card">
+    <h2>☁️ Sincronizar progreso</h2>
+    <p>Entra con la misma cuenta de Aula Interactiva. Tu glosario y la página actual se guardarán en Firebase y aparecerán en tus otros dispositivos.</p>
+    <input id="authEmail" type="email" autocomplete="email" placeholder="Correo">
+    <input id="authPassword" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <div class="auth-actions">
+      <button id="authLoginBtn" class="primary-btn">Entrar y sincronizar</button>
+      <button id="authResetBtn" class="secondary-btn">Olvidé mi contraseña</button>
+      <button id="authCloseBtn" class="secondary-btn">Seguir sin sincronizar</button>
+    </div>
+    <div id="authStatus" class="auth-status"></div>
+  </div>
+</div>
+
+<header>
+
+<div class="logo">中文 Reader</div>
+
+<div class="top-nav">
+
+<button
+class="nav-btn active"
+onclick="showView('readerView',this)"
+>
+📖 Lectura
+</button>
+
+<button
+class="nav-btn"
+onclick="showView('reviewView',this)"
+>
+🧠 Repasar
+</button>
+
+</div>
+
+<div class="account-tools">
+  <div class="header-count">📚 <span id="glossaryCount">0</span> guardadas</div>
+  <span id="syncStatus" class="sync-status">Solo en este dispositivo</span>
+  <button id="installAppBtn" class="install-btn" style="display:none">⬇️ Instalar app</button>
+  <button id="accountBtn" class="account-btn">👤 Cuenta</button>
+</div>
+
+</header>
+
+
+<section id="readerView" class="view active">
+
+<div class="reader-layout">
+
+<main class="reader-main">
+
+<div class="reader-card">
+
+<div class="lesson-label">
+三体 · CAPÍTULO 1
+</div>
+
+<h1>科学边界</h1>
+
+<div id="pageNumber" class="page-number"></div>
+
+<div class="instructions">
+
+<strong>Computadora:</strong>
+pasa el cursor sobre una palabra para ver pinyin y significado.
+Haz doble clic para guardarla.
+
+<br>
+
+<strong>Celular:</strong>
+toca una palabra para abrir su ficha.
+
+<br>
+
+<strong>🔊:</strong>
+escucha la pronunciación.
+
+<br>
+
+<strong>Etiquetas de expresión:</strong>
+se indicará si es 成语 (chengyu), expresión común, expresión coloquial o combinación fija.
+
+<br><br>
+
+Las palabras amarillas ya están guardadas en tu glosario.
+
+</div>
+
+<div class="page-nav">
+
+<button
+id="prevBtn"
+class="page-btn"
+onclick="changePage(-1)"
+>
+← Anterior
+</button>
+
+<span
+id="pageIndicator"
+class="page-indicator"
+></span>
+
+<button
+id="nextBtn"
+class="page-btn"
+onclick="changePage(1)"
+>
+Siguiente →
+</button>
+
+</div>
+
+<div id="reader"></div>
+
+<div class="page-nav bottom">
+
+<button
+id="bottomPrevBtn"
+class="page-btn"
+onclick="changePage(-1)"
+>
+← Anterior
+</button>
+
+<span
+id="bottomPageIndicator"
+class="page-indicator"
+></span>
+
+<button
+id="bottomNextBtn"
+class="page-btn"
+onclick="changePage(1)"
+>
+Siguiente →
+</button>
+
+</div>
+
+</div>
+</main>
+
+<aside class="glossary-panel">
+
+<h2>📚 Mi glosario</h2>
+
+<div class="glossary-sub">
+Las palabras que guardes se utilizarán automáticamente en los ejercicios.
+</div>
+
+<div id="glossaryList"></div>
+
+</aside>
+
+</div>
+</section>
+
+
+<section id="reviewView" class="view review-fullscreen">
+
+<button class="review-menu-toggle" onclick="toggleReviewMenu()" aria-label="Abrir menú">☰</button>
+<div id="reviewModeTitle" class="review-mode-title">🎯 Opción múltiple</div>
+
+<div class="review-page-filter review-page-filter-visible">
+  <label for="reviewPageSelect">REPASAR PÁGINA</label>
+  <select id="reviewPageSelect" onchange="setReviewPage(this.value)"></select>
+</div>
+
+<div id="reviewMenuBackdrop" class="review-menu-backdrop" onclick="closeReviewMenu()"></div>
+
+<nav id="reviewMenu" class="review-menu" aria-label="Menú de repaso">
+  <div class="review-menu-header">
+    <strong>🧠 Repasar</strong>
+    <button class="review-menu-close" onclick="closeReviewMenu()" aria-label="Cerrar menú">×</button>
+  </div>
+
+  <button class="mode-btn review-menu-item" onclick="setMode('flashcards',this)">🃏 <span>Tarjetas</span></button>
+  <button class="mode-btn review-menu-item active" onclick="setMode('multiple',this)">🎯 <span>Opción múltiple</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('typing',this)">⌨️ <span>Escribir</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('listening',this)">🎧 <span>Escuchar</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('pronunciation',this)">🎙️ <span>Pronunciar</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('character',this)">✍️ <span>Caracteres</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('wordWriting',this)">✍️ <span>Escribir a mano</span></button>
+  <button class="mode-btn review-menu-item" onclick="setMode('wordList',this)">📋 <span>Lista de palabras</span></button>
+
+  <div class="review-menu-divider"></div>
+  <button class="review-menu-item review-exit" onclick="exitReviewToReading()">📖 <span>Volver a Lectura</span></button>
+</nav>
+
+<main class="review-stage">
+  <div id="quizCard" class="quiz-card"></div>
+</main>
+</section>
+
+
+<div id="tooltip" class="tooltip">
+
+<button
+class="tooltip-close"
+onclick="closeTooltip()"
+>
+×
+</button>
+
+<div class="tooltip-word-row">
+
+<div
+id="tooltipWord"
+class="tooltip-word"
+></div>
+
+<button
+id="tooltipAudio"
+class="audio-mini"
+>
+🔊
+</button>
+
+</div>
+
+<div
+id="tooltipPinyin"
+class="tooltip-pinyin"
+></div>
+
+<div
+id="tooltipTranslation"
+class="tooltip-translation"
+></div>
+
+<div
+id="tooltipType"
+class="tooltip-type"
+></div>
+
+<div
+id="tooltipNote"
+class="tooltip-note"
+></div>
+
+<button
+id="tooltipSave"
+class="tooltip-save"
+>
++ Guardar en glosario
+</button>
+
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+/* ==================================================
+   PÁGINAS
+================================================== */
+
+const readings=[
+
+{
+page:1,
+text:`汪淼觉得，来找他的这四个人是一个奇怪的组合：两名警察和两名军人，如果那两个军人是武警还算正常，但这是两名陆军军官。
+
+汪淼第一眼就对来找他的警察没有好感。其实那名穿警服的年轻人还行，举止很有礼貌，但那位便衣就让人讨厌了。这人长得五大三粗，一脸横肉，穿着件脏兮兮的皮夹克，浑身烟味，说话粗声大嗓，是最令汪淼反感的那类人。
+
+“汪淼？”那人问，直呼其名令汪淼很不舒服，况且那人同时还在点烟，头都不抬一下。不等汪淼回答，他就向旁边那位年轻人示意了一下，后者向汪淼出示了警官证，他点完烟后就直接向屋里闯。
+
+“请不要在我家里抽烟。”汪淼拦住了他。
+
+“哦，对不起，汪教授。这是我们史强队长。”年轻警官微笑着说，同时对姓史的使了个眼色。
+
+“成，那就在楼道里说吧。”史强说着，深深地吸了一大口，手中的烟几乎燃下去一半，之后竟不见吐出烟来。“你问。”他又向年轻警官偏了一下头。
+
+“汪教授，我们是想了解一下，最近你与‘科学边界’学会的成员有过接触，是吧？”
+
+“‘科学边界’是一个在国际学术界很有影响的学术组织，成员都是著名学者。这样一个合法的学术组织，我怎么就不能接触了呢？”
+
+“你看看你这个人！”史强大声说，“我们说它不合法了吗？我们说不让你接触了吗？”他说着，刚才吸进肚子里的烟都喷到汪淼脸上。`
+},
+
+{
+page:2,
+text:`“那好，这属于个人隐私，我没必要回答你们的问题。”
+
+“还啥都成隐私了，像你这样一个著名学者，总该对公共安全负责吧。”史强把手中的烟头扔掉，又从压扁了的烟盒里抽出一根。
+
+“我有权不回答，你们请便吧。”汪淼说着要转身回屋。
+
+“等等！”史强厉声说，同时朝旁边的年轻警官挥了一下手，“给他地址和电话，下午去走一趟。”
+
+“你要干什么！”汪淼愤怒地质问，这争吵引得邻居们也探出头来，想看看出了什么事。
+
+“史队！你说你——”年轻警官生气地将史强拉到一边，显然他的粗俗不止是让汪淼一人不适应。
+
+“汪教授，请别误会。”一名少校军官急忙上前，“下午有一个重要会议，要请几位学者和专家参加，首长让我们来邀请您。”
+
+“我下午很忙。”
+
+“这我们清楚，首长已经向超导中心领导打了招呼。这次会议上不能没有您，实在不行，我们只有把会议延期等您了。”
+
+史强和他的同事没再说话，转身下楼了，两位军官看着他们走远，似乎都长出了一口气。
+
+“这人怎么这样儿。”少校小声对同事说。
+
+“他劣迹斑斑，前几年在一次劫持人质事件中，他不顾人质的死活擅自行动，结果导致一家三口惨死在罪犯手中；据说他还和黑社会打得火热，用一帮黑道势力去收拾另一帮；去年又搞刑讯逼供，使一名嫌疑人致残，因此被停职了……”
+
+“这种人怎么能进作战中心？”
+
+“首长点名要他，应该有什么过人之处吧。不过，对他限制挺严，除了公安方面的事务，几乎什么都不让他知道。”
+
+“作战中心？那是什么？”汪淼不解地看着面前的两位军官。
+
+接汪淼的汽车驶进了城市近郊的一座大院，从那只有门牌号码没`
+},
+
+{
+page:3,
+text:`有单位名牌的大门，汪淼知道这里是军方而不是警方的地盘。
+
+会议是在一个大厅里举行的，汪淼一进去就对这里的纷乱吃惊不小。大厅周围是一圈胡乱安放的电脑设备，有的桌子上放不下就直接摞地板上，电线和网线纠缠着散在地上；一大摞网络交换机没有实在机架内，而是随手摞放在服务器上；有好几个投影仪的大屏幕，在大厅的角落里呈不同角度随意立着，像吉普赛人的帐篷；烟雾像晨雾般在半空浮了一层……汪淼不知道这是否就是那名军官所说的作战中心，有一点他可以肯定：这里在处理的事情，已经让人们顾不上其他了。
+
+临时拼凑的会议桌上也是堆满了文件和杂物，与会者大多神情疲惫，衣服皱巴巴的，有领带的都扯开了，好像熬了一夜。主持会议的是一位叫常伟思的陆军少将，与会者有一半是军人。经过简单的介绍，他知道还有少部分警方人员，其他的人都是和他一样参加会议的专家学者，其中有几位还是很有名望的科学家，而且是研究基础科学的。
+
+令他感到意外的是还有四个外国人，这些人的身份令他大吃一惊：其中的两个人也是军人，分别是美军空军上校和英国陆军上校，职务是北约联络员；另外两人居然是美国中央情报局的官员，在这里的职务是什么观察员。
+
+从所有人的脸上，汪淼都读出了一句话：我们已经尽力了，快他妈的结束吧！
+
+汪淼看到了史强，他倒是一反昨天的粗鲁，向汪淼打招呼，但那一脸傻笑让汪淼愉快不起来。他不想挨史强坐，但也只有那一个空位，他只好坐过去，屋里本来已经很浓的烟味更加重了。
+
+发文件时，史强凑近汪淼说：“汪教授，你好像是在研究什么……新材料？”
+
+“纳米材料。”汪淼简单地回答。
+
+“我听说过，那玩意儿强度很高，不会被用于犯罪吧？”从史强那带有一半调侃的表情上，汪淼看不出他是不是开玩笑。
+
+“什么意思？”`
+},
+
+{
+page:4,
+text:`“啊，听说那玩意儿一根头发丝粗就能吊起一辆大卡车，犯罪分子要是偷点儿去做把刀，那一刀就能把一辆汽车砍成两截吧。”
+
+“哼，根本不用做成刀，用那种材料做一根只有头发丝百分之一粗细的线，拦在路上，就能把过往的汽车像切奶酪那样切成两半……啥不能用于犯罪？刮鱼鳞的刀都能！”
+
+史强把面前的文件从袋中抽出一半又塞了回去，显然没了兴趣。
+
+“说得对，鱼都能犯罪呢！我办过一个杀人案，一个娘们儿把她丈夫的那玩意儿割下来了。知道用的是什么？冰箱里冷冻的罗非鱼！鱼冻硬后，背上的那排刺就跟一把快刀似的……”
+
+“我没兴趣，怎么，让我来开会就是为这事儿？”
+
+“鱼？纳米材料？不、不，与那些都没关系。”史强把嘴凑到汪淼耳边，“别给这帮家伙好脸，他们歧视咱们，只想从咱们这里搞情报，但什么都不告诉咱们。像我，在这儿混了一个多月，还和你一样什么都不知道。”
+
+“同志们，会议开始。”常伟思将军说，“在全球各战区，我们这里现在成为焦点。首先把当前情况向与会的同志们介绍一下。”
+
+“战区”这个不寻常的术语令汪淼迷惑，他还注意到，首长好像并没有打算向他这样的新人介绍来龙去脉，这倒是印证了史强的话。在常将军这简短的开场白中，他两次提到了“同志们”，汪淼看看对面的两名北约军人和两个美国中情局官员，感觉将军似乎漏掉了“先生们”。
+
+“他们也是同志，反正这边的人都是这么称呼的。”史强低声地对汪淼说，同时用手中的烟指了指那四个外国人。
+
+在迷惑的同时，汪淼对史强的观察力留下了些印象。
+
+“大史，你把烟熄了，这儿的烟味够浓了。”常伟思说，低头翻着文件。
+
+史强拿着刚点着的烟四下看看，没找到烟灰缸，就“哧啦”一声扔到茶杯里了。他抓住这个机会举手要求发言，没等常伟思表态就大声说道：“首长，我提个要求，以前提过的——信息对等！”`
+},
+
+{
+page:5,
+text:`常伟思将军抬起头，“没有任何一个军事行动是信息对等的，这点也请到会的专家学者们谅解，我们不可能给你们介绍更多的背景资料。”
+
+“但我们不一样。”史强说，“警方从作战中心成立之初就一直参与，可直到现在，我们连这个机构到底是干什么的都不知道。而且，你们正在把警方排挤出去，你们一步步熟悉我们的工作，然后把我们一个个赶走。”
+
+与会的另外几名警官都在低声制止史强。史强敢对常伟思这样级别的首长这么说话，汪淼有些吃惊，而后者的反击更犀利。
+
+“我说大史，现在看来，你在部队上的老毛病还没改。你能代表警方吗？你因为自己的恶劣行为已被停职好几个月了，马上就要被清除出公安队伍。我调你来，是看重你在城市警务方面的经验，你要珍惜这次机会。”
+
+大史用粗嗓门说：“那我是戴罪立功了？你们不是说那都是些歪门邪道的经验吗？”
+
+“但有用。”常伟思对史强点点头，“有用就行，现在顾不上那么多了，这是战争时期。”
+
+“什么都顾不了了，”一位中情局的情报官员用标准的普通话说，“我们不能再用常规思维。”
+
+那位英军上校显然也能听懂中文，他点点头，“To be or not to be……”
+
+“他说什么？”史强问汪淼。
+
+“没什么。”汪淼机械地回答。这些人似乎在梦呓，战争时期？战争在哪儿？他扭头望向大厅的落地窗，透过窗子可以看到远处大院外面的城市：春天的阳光下，街道上车流如织；草坪上有人在遛狗，还有几个孩子在玩耍……
+
+里面和外面的世界，哪个更真实？
+
+常将军讲道：“最近，敌人的攻击明显加强了，目标仍是科学界高`
+},
+
+{
+page:6,
+text:`层，请你们先看一下文件中的那份名单。”
+
+汪淼抽出文件中最上面的那张纸，是用大号字打印的，名单显然抄得很仓促，中文和英文姓名都有。
+
+“汪教授，看到这份名单，您有什么印象？”常伟思看着汪淼问。
+
+“我知道其中的三人，都是物理学最前沿的著名学者。”汪淼答道，有些心不在焉，他的目光锁定在最后一个名字上，在他的潜意识中，那两个字的色彩与上面几行字是不同的。怎么会在这里看到她的名字？她怎么了？
+
+“认识？”大史用一根被烟熏黄的粗指头指着文件上的那个名字问。见汪淼没有反应，他迅速作出反应，道：“啊，不太认识。想认识？”
+
+现在，汪淼知道常伟思把他以前的这个战士调来是有道理的，这个外表粗俗的家伙，眼睛跟刀子一样。他也许不是个好警察，但确实是个狠角色。
+
+那是一年前，汪淼是“中华二号”高能加速器项目纳米构件部分的负责人。那天下午在良湘的工地上，一次短暂的休息中，他突然被眼前的一幅构图吸引了。作为一名风景摄影爱好者，现实的场景经常在他眼中形成一幅幅艺术构图。构图的主体就是他们正在安装的超导线圈，那线圈有三层楼高，安装到一半，看上去是一个由巨大的金属块和乱麻般的超低温制冷剂管道组成的怪物，仿佛一堆大工业时代的垃圾，显示出一种非人性的技术的冷酷和钢铁的野蛮。就在这金属巨怪前面，出现了一个年轻女性纤细的身影。这构图的光线分布也很绝：金属巨怪淹没在临时施工顶棚的阴影里，更透出那冷峻、粗糙的质感；而一束夕阳金色的光，透过顶棚的孔洞正好投在那个身影上，柔和的暖光照着她那柔顺的头发，照着工作服领口上白皙的脖颈，看上去就像一场狂暴的雷雨后，巨大的金属废墟上开出了一朵娇柔的花……
+
+“看什么看，干活儿！”
+
+汪淼吓了一跳，然后发现纳米研究中心主任说的不是他，而是一名`
+}
+
+];
+
+
+/* ==================================================
+   DICCIONARIO
+================================================== */
+
+const dictionary={
+
+/* ---------- PERSONAJES / NOMBRES ---------- */
+
+"汪淼":{
+pinyin:"Wāng Miǎo",
+es:"Wang Miao; nombre propio"
+},
+
+"史强":{
+pinyin:"Shǐ Qiáng",
+es:"Shi Qiang; nombre propio"
+},
+
+"常伟思":{
+pinyin:"Cháng Wěisī",
+es:"Chang Weisi; nombre propio"
+},
+
+"科学边界":{
+pinyin:"kēxué biānjiè",
+es:"Fronteras de la Ciencia"
+},
+
+"中华二号":{
+pinyin:"Zhōnghuá Èrhào",
+es:"Zhonghua II; nombre del proyecto"
+},
+
+"良湘":{
+pinyin:"Liángxiāng",
+es:"Liangxiang; nombre de lugar"
+},
+
+
+/* ---------- PÁGINA 1 ---------- */
+
+"觉得":{
+pinyin:"juéde",
+es:"pensar / sentir / considerar"
+},
+
+"来找":{
+pinyin:"lái zhǎo",
+es:"venir a buscar"
+},
+
+"奇怪":{
+pinyin:"qíguài",
+es:"extraño / raro"
+},
+
+"组合":{
+pinyin:"zǔhé",
+es:"combinación"
+},
+
+"警察":{
+pinyin:"jǐngchá",
+es:"policía"
+},
+
+"军人":{
+pinyin:"jūnrén",
+es:"militar"
+},
+
+"如果":{
+pinyin:"rúguǒ",
+es:"si / en caso de que"
+},
+
+"武警":{
+pinyin:"wǔjǐng",
+es:"policía armada / Policía Armada del Pueblo"
+},
+
+"还算":{
+pinyin:"hái suàn",
+es:"todavía puede considerarse / más o menos"
+},
+
+"正常":{
+pinyin:"zhèngcháng",
+es:"normal"
+},
+
+"陆军军官":{
+pinyin:"lùjūn jūnguān",
+es:"oficial del ejército de tierra"
+},
+
+"第一眼":{
+pinyin:"dì yī yǎn",
+es:"a primera vista"
+},
+
+"好感":{
+pinyin:"hǎogǎn",
+es:"simpatía / buena impresión"
+},
+
+"其实":{
+pinyin:"qíshí",
+es:"en realidad"
+},
+
+"警服":{
+pinyin:"jǐngfú",
+es:"uniforme de policía"
+},
+
+"年轻人":{
+pinyin:"niánqīngrén",
+es:"joven / persona joven"
+},
+
+"还行":{
+pinyin:"hái xíng",
+es:"no está mal"
+},
+
+"举止":{
+pinyin:"jǔzhǐ",
+es:"modales / comportamiento"
+},
+
+"有礼貌":{
+pinyin:"yǒu lǐmào",
+es:"ser educado / tener buenos modales"
+},
+
+"便衣":{
+pinyin:"biànyī",
+es:"agente vestido de civil / ropa de civil"
+},
+
+"讨厌":{
+pinyin:"tǎoyàn",
+es:"desagradar / resultar molesto"
+},
+
+"五大三粗":{
+pinyin:"wǔ dà sān cū",
+es:"corpulento, grande y de aspecto rudo",
+type:"成语 · Chengyu"
+},
+
+"一脸横肉":{
+pinyin:"yì liǎn héngròu",
+es:"rostro de aspecto feroz / facciones toscas",
+type:"固定搭配 · Combinación fija",
+note:"Expresión descriptiva que conviene aprender como bloque, no carácter por carácter."
+},
+
+"脏兮兮":{
+pinyin:"zāngxīxī",
+es:"mugriento / muy sucio"
+},
+
+"皮夹克":{
+pinyin:"píjiákè",
+es:"chaqueta de cuero"
+},
+
+"浑身":{
+pinyin:"húnshēn",
+es:"todo el cuerpo / de pies a cabeza"
+},
+
+"烟味":{
+pinyin:"yānwèi",
+es:"olor a cigarrillo"
+},
+
+"粗声大嗓":{
+pinyin:"cū shēng dà sǎng",
+es:"hablar con voz fuerte y áspera",
+type:"常用表达 · Expresión común",
+note:"Expresión descriptiva de uso coloquial; funciona mejor como una unidad de significado."
+},
+
+"反感":{
+pinyin:"fǎngǎn",
+es:"antipatía / rechazo"
+},
+
+"直呼其名":{
+pinyin:"zhí hū qí míng",
+es:"llamar directamente a alguien por su nombre",
+type:"成语 · Chengyu"
+},
+
+"不舒服":{
+pinyin:"bù shūfu",
+es:"sentirse incómodo / sentirse mal"
+},
+
+"况且":{
+pinyin:"kuàngqiě",
+es:"además / más aún"
+},
+
+"点烟":{
+pinyin:"diǎn yān",
+es:"encender un cigarrillo"
+},
+
+"回答":{
+pinyin:"huídá",
+es:"responder"
+},
+
+"旁边":{
+pinyin:"pángbiān",
+es:"al lado"
+},
+
+"示意":{
+pinyin:"shìyì",
+es:"hacer una señal / indicar"
+},
+
+"后者":{
+pinyin:"hòuzhě",
+es:"este último / el segundo mencionado"
+},
+
+"出示":{
+pinyin:"chūshì",
+es:"mostrar / presentar"
+},
+
+"警官证":{
+pinyin:"jǐngguānzhèng",
+es:"credencial policial"
+},
+
+"直接":{
+pinyin:"zhíjiē",
+es:"directamente"
+},
+
+"闯":{
+pinyin:"chuǎng",
+es:"irrumpir / entrar bruscamente"
+},
+
+"抽烟":{
+pinyin:"chōuyān",
+es:"fumar"
+},
+
+"拦住":{
+pinyin:"lánzhù",
+es:"detener / bloquear el paso"
+},
+
+"教授":{
+pinyin:"jiàoshòu",
+es:"profesor universitario"
+},
+
+"队长":{
+pinyin:"duìzhǎng",
+es:"capitán / jefe de equipo"
+},
+
+"微笑":{
+pinyin:"wēixiào",
+es:"sonreír / sonrisa"
+},
+
+"使了个眼色":{
+pinyin:"shǐ le ge yǎnsè",
+es:"hacer una señal con la mirada",
+type:"常用表达 · Expresión común",
+note:"Patrón muy frecuente: 使个眼色 / 使眼色 = hacer una señal con la mirada."
+},
+
+"楼道":{
+pinyin:"lóudào",
+es:"pasillo / corredor"
+},
+
+"深深地":{
+pinyin:"shēnshēn de",
+es:"profundamente"
+},
+
+"一大口":{
+pinyin:"yí dà kǒu",
+es:"una gran bocanada"
+},
+
+"几乎":{
+pinyin:"jīhū",
+es:"casi"
+},
+
+"燃":{
+pinyin:"rán",
+es:"arder / quemarse"
+},
+
+"一半":{
+pinyin:"yíbàn",
+es:"la mitad"
+},
+
+"之后":{
+pinyin:"zhīhòu",
+es:"después"
+},
+
+"竟":{
+pinyin:"jìng",
+es:"inesperadamente / sorprendentemente"
+},
+
+"吐出":{
+pinyin:"tǔchū",
+es:"expulsar / exhalar"
+},
+
+"了解一下":{
+pinyin:"liǎojiě yíxià",
+es:"averiguar un poco / informarse"
+},
+
+"最近":{
+pinyin:"zuìjìn",
+es:"recientemente"
+},
+
+"学会":{
+pinyin:"xuéhuì",
+es:"sociedad / asociación académica"
+},
+
+"成员":{
+pinyin:"chéngyuán",
+es:"miembro"
+},
+
+"接触":{
+pinyin:"jiēchù",
+es:"contacto / tener contacto"
+},
+
+"国际":{
+pinyin:"guójì",
+es:"internacional"
+},
+
+"学术界":{
+pinyin:"xuéshùjiè",
+es:"mundo académico"
+},
+
+"影响":{
+pinyin:"yǐngxiǎng",
+es:"influencia / influir"
+},
+
+"学术组织":{
+pinyin:"xuéshù zǔzhī",
+es:"organización académica"
+},
+
+"著名学者":{
+pinyin:"zhùmíng xuézhě",
+es:"académico reconocido / erudito famoso"
+},
+
+"合法":{
+pinyin:"héfǎ",
+es:"legal / legítimo"
+},
+
+"大声":{
+pinyin:"dàshēng",
+es:"en voz alta"
+},
+
+"刚才":{
+pinyin:"gāngcái",
+es:"hace un momento"
+},
+
+"吸进":{
+pinyin:"xījìn",
+es:"inhalar hacia dentro"
+},
+
+"肚子":{
+pinyin:"dùzi",
+es:"barriga / vientre"
+},
+
+"喷到":{
+pinyin:"pēn dào",
+es:"expulsar hacia / rociar sobre"
+},
+
+
+/* ---------- PÁGINA 2 ---------- */
+
+"属于":{
+pinyin:"shǔyú",
+es:"pertenecer a / corresponder a"
+},
+
+"个人隐私":{
+pinyin:"gèrén yǐnsī",
+es:"privacidad personal"
+},
+
+"隐私":{
+pinyin:"yǐnsī",
+es:"privacidad"
+},
+
+"还啥都成隐私了":{
+pinyin:"hái shá dōu chéng yǐnsī le",
+es:"¿Ahora resulta que todo es privacidad? / ¿Ya todo va a ser ‘privacidad’ o qué?",
+type:"口语表达 · Expresión coloquial",
+note:"Se aprende mejor como bloque. 啥 es una forma coloquial de 什么. La frase expresa sorpresa, crítica o incredulidad."
+},
+
+"没必要":{
+pinyin:"méi bìyào",
+es:"no ser necesario / no hacer falta"
+},
+
+"啥":{
+pinyin:"shá",
+es:"qué; forma coloquial de 什么"
+},
+
+"总该":{
+pinyin:"zǒng gāi",
+es:"por lo menos debería / debería"
+},
+
+"公共安全":{
+pinyin:"gōnggòng ānquán",
+es:"seguridad pública"
+},
+
+"负责":{
+pinyin:"fùzé",
+es:"ser responsable / hacerse cargo"
+},
+
+"烟头":{
+pinyin:"yāntóu",
+es:"colilla de cigarrillo"
+},
+
+"扔掉":{
+pinyin:"rēngdiào",
+es:"tirar / desechar"
+},
+
+"压扁":{
+pinyin:"yābiǎn",
+es:"aplastar"
+},
+
+"烟盒":{
+pinyin:"yānhé",
+es:"cajetilla de cigarrillos"
+},
+
+"抽出":{
+pinyin:"chōuchū",
+es:"sacar / extraer"
+},
+
+"有权":{
+pinyin:"yǒu quán",
+es:"tener derecho"
+},
+
+"请便":{
+pinyin:"qǐngbiàn",
+es:"haga lo que quiera / como guste"
+},
+
+"转身":{
+pinyin:"zhuǎnshēn",
+es:"darse la vuelta"
+},
+
+"回屋":{
+pinyin:"huí wū",
+es:"volver adentro"
+},
+
+"等等":{
+pinyin:"děngděng",
+es:"espera / un momento"
+},
+
+"厉声":{
+pinyin:"lìshēng",
+es:"con voz severa"
+},
+
+"挥了一下手":{
+pinyin:"huī le yíxià shǒu",
+es:"hizo un gesto con la mano"
+},
+
+"地址":{
+pinyin:"dìzhǐ",
+es:"dirección"
+},
+
+"电话":{
+pinyin:"diànhuà",
+es:"teléfono"
+},
+
+"走一趟":{
+pinyin:"zǒu yí tàng",
+es:"hacer una visita / ir hasta un lugar"
+},
+
+"愤怒":{
+pinyin:"fènnù",
+es:"furioso / enfadado"
+},
+
+"质问":{
+pinyin:"zhìwèn",
+es:"exigir explicaciones / interrogar con enojo"
+},
+
+"争吵":{
+pinyin:"zhēngchǎo",
+es:"discusión / pelea verbal"
+},
+
+"引得":{
+pinyin:"yǐnde",
+es:"provocar que / hacer que"
+},
+
+"邻居":{
+pinyin:"línjū",
+es:"vecino"
+},
+
+"探出头来":{
+pinyin:"tàn chū tóu lái",
+es:"asomar la cabeza"
+},
+
+"生气":{
+pinyin:"shēngqì",
+es:"enfadarse / enojarse"
+},
+
+"拉到一边":{
+pinyin:"lā dào yìbiān",
+es:"apartar a un lado"
+},
+
+"显然":{
+pinyin:"xiǎnrán",
+es:"evidentemente / claramente"
+},
+
+"粗俗":{
+pinyin:"cūsú",
+es:"vulgar / grosero"
+},
+
+"不止":{
+pinyin:"bùzhǐ",
+es:"no solamente / no solo"
+},
+
+"适应":{
+pinyin:"shìyìng",
+es:"adaptarse / acostumbrarse"
+},
+
+"误会":{
+pinyin:"wùhuì",
+es:"malentendido / malinterpretar"
+},
+
+"少校":{
+pinyin:"shàoxiào",
+es:"mayor; rango militar"
+},
+
+"急忙":{
+pinyin:"jímáng",
+es:"apresuradamente / de inmediato"
+},
+
+"上前":{
+pinyin:"shàngqián",
+es:"acercarse / dar un paso adelante"
+},
+
+"重要会议":{
+pinyin:"zhòngyào huìyì",
+es:"reunión importante"
+},
+
+"专家":{
+pinyin:"zhuānjiā",
+es:"experto / especialista"
+},
+
+"参加":{
+pinyin:"cānjiā",
+es:"participar / asistir"
+},
+
+"首长":{
+pinyin:"shǒuzhǎng",
+es:"jefe / superior / alto mando"
+},
+
+"邀请":{
+pinyin:"yāoqǐng",
+es:"invitar"
+},
+
+"清楚":{
+pinyin:"qīngchu",
+es:"tener claro / saber claramente"
+},
+
+"超导中心":{
+pinyin:"chāodǎo zhōngxīn",
+es:"Centro de Superconductividad"
+},
+
+"领导":{
+pinyin:"lǐngdǎo",
+es:"directivo / dirección"
+},
+
+"打了招呼":{
+pinyin:"dǎ le zhāohu",
+es:"avisar o hablar previamente con alguien"
+},
+
+"实在不行":{
+pinyin:"shízài bùxíng",
+es:"si de verdad no hay otra opción / si no queda más remedio",
+type:"口语表达 · Expresión coloquial",
+note:"Muy frecuente en conversación para introducir una alternativa de último recurso."
+},
+
+"延期":{
+pinyin:"yánqī",
+es:"aplazar / posponer"
+},
+
+"同事":{
+pinyin:"tóngshì",
+es:"compañero de trabajo"
+},
+
+"下楼":{
+pinyin:"xià lóu",
+es:"bajar las escaleras / bajar de piso"
+},
+
+"走远":{
+pinyin:"zǒuyuǎn",
+es:"alejarse"
+},
+
+"似乎":{
+pinyin:"sìhū",
+es:"parecer / aparentemente"
+},
+
+"长出了一口气":{
+pinyin:"cháng chū le yì kǒu qì",
+es:"soltar un largo suspiro de alivio",
+type:"固定搭配 · Combinación fija",
+note:"Se usa como bloque para expresar alivio después de una situación tensa."
+},
+
+"小声":{
+pinyin:"xiǎoshēng",
+es:"en voz baja"
+},
+
+"劣迹斑斑":{
+pinyin:"lièjì bānbān",
+es:"tener un historial lleno de malas acciones",
+type:"成语 · Chengyu"
+},
+
+"前几年":{
+pinyin:"qián jǐ nián",
+es:"hace algunos años"
+},
+
+"劫持人质":{
+pinyin:"jiéchí rénzhì",
+es:"tomar rehenes / secuestrar rehenes"
+},
+
+"事件":{
+pinyin:"shìjiàn",
+es:"incidente / suceso"
+},
+
+"不顾":{
+pinyin:"bú gù",
+es:"sin preocuparse por / ignorando"
+},
+
+"人质":{
+pinyin:"rénzhì",
+es:"rehén"
+},
+
+"死活":{
+pinyin:"sǐhuó",
+es:"vida o muerte"
+},
+
+"擅自行动":{
+pinyin:"shànzì xíngdòng",
+es:"actuar sin autorización"
+},
+
+"结果":{
+pinyin:"jiéguǒ",
+es:"resultado / como resultado"
+},
+
+"导致":{
+pinyin:"dǎozhì",
+es:"causar / provocar"
+},
+
+"一家三口":{
+pinyin:"yì jiā sān kǒu",
+es:"familia de tres personas"
+},
+
+"惨死":{
+pinyin:"cǎnsǐ",
+es:"morir trágicamente"
+},
+
+"罪犯":{
+pinyin:"zuìfàn",
+es:"criminal / delincuente"
+},
+
+"据说":{
+pinyin:"jùshuō",
+es:"según se dice / se dice que"
+},
+
+"黑社会":{
+pinyin:"hēishèhuì",
+es:"crimen organizado / mafia"
+},
+
+"打得火热":{
+pinyin:"dǎ de huǒrè",
+es:"llevarse muy estrechamente / estar muy compenetrados",
+type:"常用表达 · Expresión común",
+note:"Expresión figurada. No significa literalmente ‘golpear con calor’."
+},
+
+"一帮":{
+pinyin:"yì bāng",
+es:"un grupo / una banda"
+},
+
+"黑道势力":{
+pinyin:"hēidào shìlì",
+es:"fuerzas del hampa / crimen organizado"
+},
+
+"收拾":{
+pinyin:"shōushi",
+es:"encargarse de / ajustar cuentas / dar una lección"
+},
+
+"另一帮":{
+pinyin:"lìng yì bāng",
+es:"otro grupo / otra banda"
+},
+
+"去年":{
+pinyin:"qùnián",
+es:"el año pasado"
+},
+
+"刑讯逼供":{
+pinyin:"xíngxùn bīgòng",
+es:"obtener una confesión mediante tortura"
+},
+
+"嫌疑人":{
+pinyin:"xiányírén",
+es:"sospechoso"
+},
+
+"致残":{
+pinyin:"zhìcán",
+es:"causar discapacidad / dejar inválido"
+},
+
+"因此":{
+pinyin:"yīncǐ",
+es:"por ello / por lo tanto"
+},
+
+"停职":{
+pinyin:"tíngzhí",
+es:"suspender del cargo"
+},
+
+"作战中心":{
+pinyin:"zuòzhàn zhōngxīn",
+es:"centro de operaciones / centro de combate"
+},
+
+"点名":{
+pinyin:"diǎnmíng",
+es:"pedir expresamente por nombre"
+},
+
+"应该":{
+pinyin:"yīnggāi",
+es:"deber / probablemente"
+},
+
+"过人之处":{
+pinyin:"guòrén zhī chù",
+es:"cualidad excepcional / punto en el que alguien sobresale",
+type:"固定搭配 · Combinación fija",
+note:"Bloque frecuente para hablar de una cualidad que supera a la de los demás."
+},
+
+"不过":{
+pinyin:"búguò",
+es:"sin embargo / pero"
+},
+
+"限制":{
+pinyin:"xiànzhì",
+es:"limitar / restricción"
+},
+
+"挺严":{
+pinyin:"tǐng yán",
+es:"bastante estricto"
+},
+
+"公安":{
+pinyin:"gōng'ān",
+es:"seguridad pública / policía"
+},
+
+"事务":{
+pinyin:"shìwù",
+es:"asunto / tarea"
+},
+
+"不解":{
+pinyin:"bùjiě",
+es:"no comprender / estar desconcertado"
+},
+
+"面前":{
+pinyin:"miànqián",
+es:"delante / frente a uno"
+},
+
+"汽车":{
+pinyin:"qìchē",
+es:"automóvil / coche"
+},
+
+"驶进":{
+pinyin:"shǐjìn",
+es:"entrar conduciendo"
+},
+
+"城市近郊":{
+pinyin:"chéngshì jìnjiāo",
+es:"afueras cercanas de la ciudad"
+},
+
+"大院":{
+pinyin:"dàyuàn",
+es:"gran recinto / complejo"
+},
+
+"门牌号码":{
+pinyin:"ménpái hàomǎ",
+es:"número de puerta / número de dirección"
+},
+
+
+/* ---------- PÁGINA 3 ---------- */
+
+"单位名牌":{
+pinyin:"dānwèi míngpái",
+es:"placa con el nombre de una institución"
+},
+
+"大门":{
+pinyin:"dàmén",
+es:"entrada principal / gran puerta"
+},
+
+"军方":{
+pinyin:"jūnfāng",
+es:"las fuerzas armadas / ámbito militar"
+},
+
+"警方":{
+pinyin:"jǐngfāng",
+es:"la policía / autoridades policiales"
+},
+
+"地盘":{
+pinyin:"dìpán",
+es:"territorio / zona bajo control de alguien"
+},
+
+"大厅":{
+pinyin:"dàtīng",
+es:"gran salón / vestíbulo"
+},
+
+"举行":{
+pinyin:"jǔxíng",
+es:"celebrar / llevar a cabo"
+},
+
+"一进去":{
+pinyin:"yí jìnqù",
+es:"en cuanto entró"
+},
+
+"纷乱":{
+pinyin:"fēnluàn",
+es:"desorden / caos"
+},
+
+"吃惊不小":{
+pinyin:"chījīng bù xiǎo",
+es:"llevarse una gran sorpresa",
+type:"常用表达 · Expresión común",
+note:"La negación 不小 intensifica la idea: literalmente, ‘la sorpresa no fue pequeña’."
+},
+
+"周围":{
+pinyin:"zhōuwéi",
+es:"alrededor / alrededores"
+},
+
+"胡乱":{
+pinyin:"húluàn",
+es:"de forma desordenada / al azar"
+},
+
+"安放":{
+pinyin:"ānfàng",
+es:"colocar / instalar"
+},
+
+"电脑设备":{
+pinyin:"diànnǎo shèbèi",
+es:"equipo informático"
+},
+
+"地板":{
+pinyin:"dìbǎn",
+es:"suelo / piso"
+},
+
+"电线":{
+pinyin:"diànxiàn",
+es:"cable eléctrico"
+},
+
+"网线":{
+pinyin:"wǎngxiàn",
+es:"cable de red"
+},
+
+"纠缠":{
+pinyin:"jiūchán",
+es:"enredarse / entrelazarse"
+},
+
+"网络交换机":{
+pinyin:"wǎngluò jiāohuànjī",
+es:"conmutador de red / switch de red"
+},
+
+"机架":{
+pinyin:"jījià",
+es:"rack / bastidor para equipos"
+},
+
+"服务器":{
+pinyin:"fúwùqì",
+es:"servidor"
+},
+
+"投影仪":{
+pinyin:"tóuyǐngyí",
+es:"proyector"
+},
+
+"大屏幕":{
+pinyin:"dà píngmù",
+es:"pantalla grande"
+},
+
+"角落":{
+pinyin:"jiǎoluò",
+es:"esquina / rincón"
+},
+
+"角度":{
+pinyin:"jiǎodù",
+es:"ángulo"
+},
+
+"随意":{
+pinyin:"suíyì",
+es:"libremente / sin orden particular"
+},
+
+"吉普赛人":{
+pinyin:"Jípǔsàirén",
+es:"gitano / pueblo romaní"
+},
+
+"帐篷":{
+pinyin:"zhàngpeng",
+es:"tienda de campaña"
+},
+
+"烟雾":{
+pinyin:"yānwù",
+es:"humo / neblina de humo"
+},
+
+"晨雾":{
+pinyin:"chénwù",
+es:"niebla matinal"
+},
+
+"半空":{
+pinyin:"bànkōng",
+es:"a media altura / en el aire"
+},
+
+"肯定":{
+pinyin:"kěndìng",
+es:"estar seguro / afirmar"
+},
+
+"处理":{
+pinyin:"chǔlǐ",
+es:"procesar / ocuparse de"
+},
+
+"顾不上":{
+pinyin:"gùbushàng",
+es:"no tener tiempo o capacidad para atender algo"
+},
+
+"临时":{
+pinyin:"línshí",
+es:"temporal / provisional"
+},
+
+"拼凑":{
+pinyin:"pīncòu",
+es:"improvisar juntando cosas / armar de cualquier manera"
+},
+
+"会议桌":{
+pinyin:"huìyìzhuō",
+es:"mesa de reuniones"
+},
+
+"堆满":{
+pinyin:"duīmǎn",
+es:"estar lleno / amontonado"
+},
+
+"文件":{
+pinyin:"wénjiàn",
+es:"documento / archivo"
+},
+
+"杂物":{
+pinyin:"záwù",
+es:"objetos diversos / trastos"
+},
+
+"与会者":{
+pinyin:"yùhuìzhě",
+es:"asistente a una reunión / participante"
+},
+
+"大多":{
+pinyin:"dàduō",
+es:"en su mayoría"
+},
+
+"神情":{
+pinyin:"shénqíng",
+es:"expresión / semblante"
+},
+
+"疲惫":{
+pinyin:"píbèi",
+es:"agotado / exhausto"
+},
+
+"皱巴巴":{
+pinyin:"zhòubābā",
+es:"arrugado"
+},
+
+"领带":{
+pinyin:"lǐngdài",
+es:"corbata"
+},
+
+"扯开":{
+pinyin:"chěkāi",
+es:"aflojar / abrir tirando"
+},
+
+"熬了一夜":{
+pinyin:"áo le yí yè",
+es:"pasar toda la noche despierto"
+},
+
+"主持":{
+pinyin:"zhǔchí",
+es:"presidir / dirigir"
+},
+
+"陆军少将":{
+pinyin:"lùjūn shàojiàng",
+es:"general de división / mayor general del ejército"
+},
+
+"介绍":{
+pinyin:"jièshào",
+es:"presentar / introducción"
+},
+
+"少部分":{
+pinyin:"shǎo bùfen",
+es:"una pequeña parte"
+},
+
+"专家学者":{
+pinyin:"zhuānjiā xuézhě",
+es:"expertos y académicos"
+},
+
+"名望":{
+pinyin:"míngwàng",
+es:"prestigio / reputación"
+},
+
+"科学家":{
+pinyin:"kēxuéjiā",
+es:"científico"
+},
+
+"基础科学":{
+pinyin:"jīchǔ kēxué",
+es:"ciencia básica / ciencias fundamentales"
+},
+
+"意外":{
+pinyin:"yìwài",
+es:"inesperado / sorpresa"
+},
+
+"外国人":{
+pinyin:"wàiguórén",
+es:"extranjero"
+},
+
+"身份":{
+pinyin:"shēnfèn",
+es:"identidad / condición"
+},
+
+"大吃一惊":{
+pinyin:"dà chī yì jīng",
+es:"llevarse una enorme sorpresa",
+type:"成语 · Chengyu"
+},
+
+"分别":{
+pinyin:"fēnbié",
+es:"respectivamente / por separado"
+},
+
+"美军":{
+pinyin:"Měijūn",
+es:"fuerzas armadas de Estados Unidos"
+},
+
+"空军上校":{
+pinyin:"kōngjūn shàngxiào",
+es:"coronel de la fuerza aérea"
+},
+
+"英国陆军":{
+pinyin:"Yīngguó lùjūn",
+es:"ejército británico"
+},
+
+"上校":{
+pinyin:"shàngxiào",
+es:"coronel"
+},
+
+"北约":{
+pinyin:"Běiyuē",
+es:"OTAN"
+},
+
+"联络员":{
+pinyin:"liánluòyuán",
+es:"oficial / agente de enlace"
+},
+
+"居然":{
+pinyin:"jūrán",
+es:"sorprendentemente / contra lo esperado"
+},
+
+"美国中央情报局":{
+pinyin:"Měiguó Zhōngyāng Qíngbàojú",
+es:"Agencia Central de Inteligencia de Estados Unidos; CIA"
+},
+
+"官员":{
+pinyin:"guānyuán",
+es:"funcionario / oficial"
+},
+
+"观察员":{
+pinyin:"guāncháyuán",
+es:"observador"
+},
+
+"尽力":{
+pinyin:"jìnlì",
+es:"hacer todo lo posible"
+},
+
+"结束":{
+pinyin:"jiéshù",
+es:"terminar / finalizar"
+},
+
+"一反":{
+pinyin:"yìfǎn",
+es:"contrariamente a / actuar de forma opuesta a lo habitual"
+},
+
+"粗鲁":{
+pinyin:"cūlǔ",
+es:"grosero / brusco"
+},
+
+"打招呼":{
+pinyin:"dǎ zhāohu",
+es:"saludar"
+},
+
+"傻笑":{
+pinyin:"shǎxiào",
+es:"sonrisa tonta / sonreír tontamente"
+},
+
+"愉快":{
+pinyin:"yúkuài",
+es:"agradable / feliz"
+},
+
+"空位":{
+pinyin:"kòngwèi",
+es:"asiento vacío"
+},
+
+"更加":{
+pinyin:"gèngjiā",
+es:"aún más"
+},
+
+"凑近":{
+pinyin:"còujìn",
+es:"acercarse mucho"
+},
+
+"新材料":{
+pinyin:"xīn cáiliào",
+es:"nuevo material"
+},
+
+"纳米材料":{
+pinyin:"nàmǐ cáiliào",
+es:"nanomaterial"
+},
+
+"强度":{
+pinyin:"qiángdù",
+es:"resistencia / intensidad"
+},
+
+"犯罪":{
+pinyin:"fànzuì",
+es:"delito / cometer un crimen"
+},
+
+"调侃":{
+pinyin:"tiáokǎn",
+es:"bromear / burlarse de manera ligera"
+},
+
+"表情":{
+pinyin:"biǎoqíng",
+es:"expresión facial"
+},
+
+"开玩笑":{
+pinyin:"kāi wánxiào",
+es:"bromear / estar de broma"
+},
+
+
+/* ---------- PÁGINA 4 ---------- */
+
+"头发丝":{
+pinyin:"tóufasi",
+es:"cabello / hebra de cabello"
+},
+
+"吊起":{
+pinyin:"diàoqǐ",
+es:"levantar suspendiendo / colgar"
+},
+
+"大卡车":{
+pinyin:"dà kǎchē",
+es:"camión grande"
+},
+
+"犯罪分子":{
+pinyin:"fànzuì fènzǐ",
+es:"delincuente / criminal"
+},
+
+"砍成两截":{
+pinyin:"kǎn chéng liǎng jié",
+es:"cortar en dos pedazos"
+},
+
+"根本":{
+pinyin:"gēnběn",
+es:"en absoluto / fundamentalmente"
+},
+
+"百分之一":{
+pinyin:"bǎifēn zhī yī",
+es:"uno por ciento / una centésima parte"
+},
+
+"粗细":{
+pinyin:"cūxì",
+es:"grosor"
+},
+
+"拦在路上":{
+pinyin:"lán zài lùshang",
+es:"colocar atravesado en el camino"
+},
+
+"过往":{
+pinyin:"guòwǎng",
+es:"que pasa por un lugar / tránsito"
+},
+
+"奶酪":{
+pinyin:"nǎilào",
+es:"queso"
+},
+
+"两半":{
+pinyin:"liǎng bàn",
+es:"dos mitades"
+},
+
+"鱼鳞":{
+pinyin:"yúlín",
+es:"escamas de pez"
+},
+
+"塞回去":{
+pinyin:"sāi huíqu",
+es:"meter de nuevo / volver a introducir"
+},
+
+"兴趣":{
+pinyin:"xìngqù",
+es:"interés"
+},
+
+"杀人案":{
+pinyin:"shārén'àn",
+es:"caso de asesinato"
+},
+
+"娘们儿":{
+pinyin:"niángmenr",
+es:"mujer; expresión coloquial y despectiva"
+},
+
+"丈夫":{
+pinyin:"zhàngfu",
+es:"esposo / marido"
+},
+
+"割下来":{
+pinyin:"gē xiàlái",
+es:"cortar y separar"
+},
+
+"冰箱":{
+pinyin:"bīngxiāng",
+es:"refrigerador"
+},
+
+"冷冻":{
+pinyin:"lěngdòng",
+es:"congelar / congelado"
+},
+
+"罗非鱼":{
+pinyin:"luófēiyú",
+es:"tilapia"
+},
+
+"冻硬":{
+pinyin:"dòngyìng",
+es:"congelarse hasta quedar duro"
+},
+
+"一排":{
+pinyin:"yì pái",
+es:"una fila"
+},
+
+"快刀":{
+pinyin:"kuàidāo",
+es:"cuchillo muy afilado"
+},
+
+"没关系":{
+pinyin:"méi guānxi",
+es:"no tener relación / no importar"
+},
+
+"耳边":{
+pinyin:"ěrbiān",
+es:"junto al oído"
+},
+
+"家伙":{
+pinyin:"jiāhuo",
+es:"tipo / individuo / sujeto"
+},
+
+"好脸":{
+pinyin:"hǎoliǎn",
+es:"trato amable / buena cara"
+},
+
+"歧视":{
+pinyin:"qíshì",
+es:"discriminar"
+},
+
+"搞情报":{
+pinyin:"gǎo qíngbào",
+es:"conseguir información de inteligencia"
+},
+
+"情报":{
+pinyin:"qíngbào",
+es:"información / inteligencia"
+},
+
+"混":{
+pinyin:"hùn",
+es:"andar / pasar el tiempo / moverse en cierto ambiente"
+},
+
+"同志":{
+pinyin:"tóngzhì",
+es:"camarada"
+},
+
+"全球":{
+pinyin:"quánqiú",
+es:"todo el mundo / global"
+},
+
+"战区":{
+pinyin:"zhànqū",
+es:"zona de guerra / teatro de operaciones"
+},
+
+"焦点":{
+pinyin:"jiāodiǎn",
+es:"foco / centro de atención"
+},
+
+"当前情况":{
+pinyin:"dāngqián qíngkuàng",
+es:"situación actual"
+},
+
+"不寻常":{
+pinyin:"bù xúncháng",
+es:"inusual / fuera de lo normal"
+},
+
+"术语":{
+pinyin:"shùyǔ",
+es:"término técnico"
+},
+
+"迷惑":{
+pinyin:"míhuo",
+es:"confundido / desconcertado"
+},
+
+"新人":{
+pinyin:"xīnrén",
+es:"recién llegado / novato"
+},
+
+"来龙去脉":{
+pinyin:"lái lóng qù mài",
+es:"antecedentes y desarrollo completo de un asunto",
+type:"成语 · Chengyu"
+},
+
+"印证":{
+pinyin:"yìnzhèng",
+es:"confirmar / corroborar"
+},
+
+"简短":{
+pinyin:"jiǎnduǎn",
+es:"breve"
+},
+
+"开场白":{
+pinyin:"kāichǎngbái",
+es:"palabras iniciales / introducción"
+},
+
+"对面":{
+pinyin:"duìmiàn",
+es:"enfrente"
+},
+
+"中情局":{
+pinyin:"Zhōngqíngjú",
+es:"CIA / Agencia Central de Inteligencia"
+},
+
+"漏掉":{
+pinyin:"lòudiào",
+es:"omitir / dejar fuera"
+},
+
+"先生们":{
+pinyin:"xiānshengmen",
+es:"señores"
+},
+
+"反正":{
+pinyin:"fǎnzhèng",
+es:"de todos modos / en cualquier caso"
+},
+
+"称呼":{
+pinyin:"chēnghu",
+es:"llamar / forma de tratamiento"
+},
+
+"观察力":{
+pinyin:"guānchálì",
+es:"capacidad de observación"
+},
+
+"印象":{
+pinyin:"yìnxiàng",
+es:"impresión"
+},
+
+"熄":{
+pinyin:"xī",
+es:"apagar"
+},
+
+"烟灰缸":{
+pinyin:"yānhuīgāng",
+es:"cenicero"
+},
+
+"茶杯":{
+pinyin:"chábēi",
+es:"taza de té"
+},
+
+"抓住机会":{
+pinyin:"zhuāzhù jīhuì",
+es:"aprovechar la oportunidad"
+},
+
+"举手":{
+pinyin:"jǔshǒu",
+es:"levantar la mano"
+},
+
+"发言":{
+pinyin:"fāyán",
+es:"tomar la palabra / hablar en una reunión"
+},
+
+"表态":{
+pinyin:"biǎotài",
+es:"expresar una postura / manifestarse"
+},
+
+"信息对等":{
+pinyin:"xìnxī duìděng",
+es:"igualdad de acceso a la información"
+},
+
+
+/* ---------- PÁGINA 5 ---------- */
+
+"军事行动":{
+pinyin:"jūnshì xíngdòng",
+es:"operación militar"
+},
+
+"谅解":{
+pinyin:"liàngjiě",
+es:"comprender / disculpar / mostrar comprensión"
+},
+
+"背景资料":{
+pinyin:"bèijǐng zīliào",
+es:"información de antecedentes / contexto"
+},
+
+"成立之初":{
+pinyin:"chénglì zhī chū",
+es:"desde el momento de su creación"
+},
+
+"参与":{
+pinyin:"cānyù",
+es:"participar / involucrarse"
+},
+
+"机构":{
+pinyin:"jīgòu",
+es:"institución / organismo"
+},
+
+"到底":{
+pinyin:"dàodǐ",
+es:"exactamente / al fin y al cabo"
+},
+
+"排挤":{
+pinyin:"páijǐ",
+es:"excluir / marginar"
+},
+
+"一步步":{
+pinyin:"yíbùbù",
+es:"paso a paso"
+},
+
+"熟悉":{
+pinyin:"shúxī",
+es:"familiarizarse / conocer bien"
+},
+
+"赶走":{
+pinyin:"gǎnzǒu",
+es:"expulsar / echar"
+},
+
+"警官":{
+pinyin:"jǐngguān",
+es:"oficial de policía"
+},
+
+"制止":{
+pinyin:"zhìzhǐ",
+es:"detener / impedir"
+},
+
+"级别":{
+pinyin:"jíbié",
+es:"nivel / rango"
+},
+
+"反击":{
+pinyin:"fǎnjī",
+es:"contraatacar / réplica"
+},
+
+"犀利":{
+pinyin:"xīlì",
+es:"afilado / incisivo"
+},
+
+"老毛病":{
+pinyin:"lǎo máobìng",
+es:"viejo defecto / mala costumbre de siempre"
+},
+
+"代表":{
+pinyin:"dàibiǎo",
+es:"representar"
+},
+
+"恶劣行为":{
+pinyin:"èliè xíngwéi",
+es:"conducta grave / comportamiento deplorable"
+},
+
+"清除":{
+pinyin:"qīngchú",
+es:"eliminar / expulsar"
+},
+
+"公安队伍":{
+pinyin:"gōng'ān duìwu",
+es:"cuerpo policial / fuerzas de seguridad pública"
+},
+
+"看重":{
+pinyin:"kànzhòng",
+es:"valorar mucho / considerar importante"
+},
+
+"城市警务":{
+pinyin:"chéngshì jǐngwù",
+es:"trabajo policial urbano"
+},
+
+"经验":{
+pinyin:"jīngyàn",
+es:"experiencia"
+},
+
+"珍惜":{
+pinyin:"zhēnxī",
+es:"valorar / apreciar"
+},
+
+"机会":{
+pinyin:"jīhuì",
+es:"oportunidad"
+},
+
+"粗嗓门":{
+pinyin:"cū sǎngmén",
+es:"voz áspera y fuerte"
+},
+
+"戴罪立功":{
+pinyin:"dài zuì lì gōng",
+es:"redimirse realizando un mérito mientras se carga con una culpa",
+type:"成语 · Chengyu"
+},
+
+"歪门邪道":{
+pinyin:"wāi mén xié dào",
+es:"métodos turbios / caminos poco ortodoxos o inmorales",
+type:"成语 · Chengyu"
+},
+
+"顾不上":{
+pinyin:"gùbushàng",
+es:"no poder ocuparse de / no tener tiempo para atender"
+},
+
+"战争时期":{
+pinyin:"zhànzhēng shíqī",
+es:"tiempo de guerra"
+},
+
+"情报官员":{
+pinyin:"qíngbào guānyuán",
+es:"oficial de inteligencia"
+},
+
+"标准":{
+pinyin:"biāozhǔn",
+es:"estándar / correcto"
+},
+
+"普通话":{
+pinyin:"pǔtōnghuà",
+es:"mandarín estándar"
+},
+
+"常规思维":{
+pinyin:"chángguī sīwéi",
+es:"pensamiento convencional"
+},
+
+"听懂":{
+pinyin:"tīngdǒng",
+es:"entender al escuchar"
+},
+
+"机械地":{
+pinyin:"jīxiè de",
+es:"mecánicamente / de forma automática"
+},
+
+"梦呓":{
+pinyin:"mèngyì",
+es:"hablar dormido / delirio"
+},
+
+"扭头":{
+pinyin:"niǔtóu",
+es:"girar la cabeza"
+},
+
+"望向":{
+pinyin:"wàngxiàng",
+es:"mirar hacia"
+},
+
+"落地窗":{
+pinyin:"luòdìchuāng",
+es:"ventanal de piso a techo"
+},
+
+"透过":{
+pinyin:"tòuguò",
+es:"a través de"
+},
+
+"远处":{
+pinyin:"yuǎnchù",
+es:"a lo lejos"
+},
+
+"阳光":{
+pinyin:"yángguāng",
+es:"luz del sol"
+},
+
+"街道":{
+pinyin:"jiēdào",
+es:"calle"
+},
+
+"车流如织":{
+pinyin:"chē liú rú zhī",
+es:"tráfico muy denso, como hilos entretejidos",
+type:"成语 · Chengyu"
+},
+
+"草坪":{
+pinyin:"cǎopíng",
+es:"césped / pradera"
+},
+
+"遛狗":{
+pinyin:"liùgǒu",
+es:"pasear al perro"
+},
+
+"玩耍":{
+pinyin:"wánshuǎ",
+es:"jugar"
+},
+
+"真实":{
+pinyin:"zhēnshí",
+es:"real / auténtico"
+},
+
+"敌人":{
+pinyin:"dírén",
+es:"enemigo"
+},
+
+"攻击":{
+pinyin:"gōngjī",
+es:"ataque / atacar"
+},
+
+"明显":{
+pinyin:"míngxiǎn",
+es:"evidente / claramente"
+},
+
+"加强":{
+pinyin:"jiāqiáng",
+es:"reforzar / intensificar"
+},
+
+"目标":{
+pinyin:"mùbiāo",
+es:"objetivo"
+},
+
+"科学界":{
+pinyin:"kēxuéjiè",
+es:"comunidad científica / mundo científico"
+},
+
+
+/* ---------- PÁGINA 6 ---------- */
+
+"名单":{
+pinyin:"míngdān",
+es:"lista de nombres"
+},
+
+"最上面":{
+pinyin:"zuì shàngmian",
+es:"la parte más superior"
+},
+
+"大号字":{
+pinyin:"dàhào zì",
+es:"letras de gran tamaño"
+},
+
+"打印":{
+pinyin:"dǎyìn",
+es:"imprimir"
+},
+
+"仓促":{
+pinyin:"cāngcù",
+es:"apresurado / hecho con prisa"
+},
+
+"英文":{
+pinyin:"Yīngwén",
+es:"inglés / idioma inglés"
+},
+
+"姓名":{
+pinyin:"xìngmíng",
+es:"nombre completo"
+},
+
+"物理学":{
+pinyin:"wùlǐxué",
+es:"física"
+},
+
+"最前沿":{
+pinyin:"zuì qiányán",
+es:"la vanguardia / lo más avanzado"
+},
+
+"心不在焉":{
+pinyin:"xīn bù zài yān",
+es:"estar distraído / tener la mente en otra parte",
+type:"成语 · Chengyu"
+},
+
+"目光":{
+pinyin:"mùguāng",
+es:"mirada"
+},
+
+"锁定":{
+pinyin:"suǒdìng",
+es:"fijar / bloquear / concentrar en"
+},
+
+"最后":{
+pinyin:"zuìhòu",
+es:"último / finalmente"
+},
+
+"名字":{
+pinyin:"míngzi",
+es:"nombre"
+},
+
+"潜意识":{
+pinyin:"qiányìshí",
+es:"subconsciente"
+},
+
+"色彩":{
+pinyin:"sècǎi",
+es:"color / tonalidad"
+},
+
+"烟熏黄":{
+pinyin:"yānxūn huáng",
+es:"amarillento por el humo"
+},
+
+"粗指头":{
+pinyin:"cū zhǐtou",
+es:"dedo grueso"
+},
+
+"反应":{
+pinyin:"fǎnyìng",
+es:"reacción / reaccionar"
+},
+
+"迅速":{
+pinyin:"xùnsù",
+es:"rápidamente"
+},
+
+"作出反应":{
+pinyin:"zuòchū fǎnyìng",
+es:"reaccionar / dar una respuesta"
+},
+
+"战士":{
+pinyin:"zhànshì",
+es:"soldado / combatiente"
+},
+
+"有道理":{
+pinyin:"yǒu dàolǐ",
+es:"tener sentido / ser razonable"
+},
+
+"外表":{
+pinyin:"wàibiǎo",
+es:"apariencia exterior"
+},
+
+"刀子":{
+pinyin:"dāozi",
+es:"cuchillo"
+},
+
+"也许":{
+pinyin:"yěxǔ",
+es:"quizá / tal vez"
+},
+
+"确实":{
+pinyin:"quèshí",
+es:"realmente / ciertamente"
+},
+
+"狠角色":{
+pinyin:"hěn juésè",
+es:"tipo duro / persona formidable"
+},
+
+"一年前":{
+pinyin:"yì nián qián",
+es:"hace un año"
+},
+
+"高能加速器":{
+pinyin:"gāonéng jiāsùqì",
+es:"acelerador de alta energía"
+},
+
+"项目":{
+pinyin:"xiàngmù",
+es:"proyecto"
+},
+
+"纳米构件":{
+pinyin:"nàmǐ gòujiàn",
+es:"componentes nanométricos / nanoestructuras"
+},
+
+"负责人":{
+pinyin:"fùzérén",
+es:"responsable / encargado"
+},
+
+"工地":{
+pinyin:"gōngdì",
+es:"obra / sitio de construcción"
+},
+
+"短暂":{
+pinyin:"duǎnzàn",
+es:"breve / de corta duración"
+},
+
+"休息":{
+pinyin:"xiūxi",
+es:"descanso / descansar"
+},
+
+"突然":{
+pinyin:"tūrán",
+es:"de repente"
+},
+
+"眼前":{
+pinyin:"yǎnqián",
+es:"ante los ojos / frente a uno"
+},
+
+"构图":{
+pinyin:"gòutú",
+es:"composición visual / composición fotográfica"
+},
+
+"吸引":{
+pinyin:"xīyǐn",
+es:"atraer"
+},
+
+"风景摄影":{
+pinyin:"fēngjǐng shèyǐng",
+es:"fotografía de paisaje"
+},
+
+"爱好者":{
+pinyin:"àihàozhě",
+es:"aficionado / entusiasta"
+},
+
+"现实":{
+pinyin:"xiànshí",
+es:"realidad / real"
+},
+
+"场景":{
+pinyin:"chǎngjǐng",
+es:"escena / escenario"
+},
+
+"经常":{
+pinyin:"jīngcháng",
+es:"frecuentemente"
+},
+
+"形成":{
+pinyin:"xíngchéng",
+es:"formar / dar lugar a"
+},
+
+"艺术构图":{
+pinyin:"yìshù gòutú",
+es:"composición artística"
+},
+
+"主体":{
+pinyin:"zhǔtǐ",
+es:"sujeto principal / elemento principal"
+},
+
+"安装":{
+pinyin:"ānzhuāng",
+es:"instalar"
+},
+
+"超导线圈":{
+pinyin:"chāodǎo xiànquān",
+es:"bobina superconductora"
+},
+
+"三层楼高":{
+pinyin:"sān céng lóu gāo",
+es:"de tres pisos de altura"
+},
+
+"巨大":{
+pinyin:"jùdà",
+es:"enorme / gigantesco"
+},
+
+"金属块":{
+pinyin:"jīnshǔ kuài",
+es:"bloque de metal"
+},
+
+"乱麻般":{
+pinyin:"luànmá bān",
+es:"como una maraña enredada"
+},
+
+"超低温":{
+pinyin:"chāodīwēn",
+es:"temperatura ultrabaja"
+},
+
+"制冷剂":{
+pinyin:"zhìlěngjì",
+es:"refrigerante"
+},
+
+"管道":{
+pinyin:"guǎndào",
+es:"tubería / conducto"
+},
+
+"组成":{
+pinyin:"zǔchéng",
+es:"componer / formar"
+},
+
+"怪物":{
+pinyin:"guàiwù",
+es:"monstruo"
+},
+
+"仿佛":{
+pinyin:"fǎngfú",
+es:"como si / parecer"
+},
+
+"工业时代":{
+pinyin:"gōngyè shídài",
+es:"era industrial"
+},
+
+"垃圾":{
+pinyin:"lājī",
+es:"basura"
+},
+
+"显示":{
+pinyin:"xiǎnshì",
+es:"mostrar / revelar"
+},
+
+"非人性":{
+pinyin:"fēi rénxìng",
+es:"inhumano / carente de humanidad"
+},
+
+"技术":{
+pinyin:"jìshù",
+es:"tecnología / técnica"
+},
+
+"冷酷":{
+pinyin:"lěngkù",
+es:"frío / cruel"
+},
+
+"钢铁":{
+pinyin:"gāngtiě",
+es:"acero y hierro"
+},
+
+"野蛮":{
+pinyin:"yěmán",
+es:"salvaje / brutal"
+},
+
+"金属巨怪":{
+pinyin:"jīnshǔ jùguài",
+es:"monstruo metálico gigantesco"
+},
+
+"年轻女性":{
+pinyin:"niánqīng nǚxìng",
+es:"mujer joven"
+},
+
+"纤细":{
+pinyin:"xiānxì",
+es:"fino / esbelto / delicado"
+},
+
+"身影":{
+pinyin:"shēnyǐng",
+es:"silueta / figura"
+},
+
+"光线":{
+pinyin:"guāngxiàn",
+es:"luz / rayos de luz"
+},
+
+"分布":{
+pinyin:"fēnbù",
+es:"distribución / distribuirse"
+},
+
+"淹没":{
+pinyin:"yānmò",
+es:"sumergir / quedar cubierto"
+},
+
+"临时施工":{
+pinyin:"línshí shīgōng",
+es:"obra temporal"
+},
+
+"顶棚":{
+pinyin:"dǐngpéng",
+es:"techo / cubierta"
+},
+
+"阴影":{
+pinyin:"yīnyǐng",
+es:"sombra"
+},
+
+"冷峻":{
+pinyin:"lěngjùn",
+es:"frío y severo / austero"
+},
+
+"粗糙":{
+pinyin:"cūcāo",
+es:"áspero / tosco"
+},
+
+"质感":{
+pinyin:"zhìgǎn",
+es:"textura / sensación material"
+},
+
+"一束":{
+pinyin:"yí shù",
+es:"un haz / un rayo"
+},
+
+"夕阳":{
+pinyin:"xīyáng",
+es:"sol del atardecer"
+},
+
+"金色":{
+pinyin:"jīnsè",
+es:"dorado"
+},
+
+"孔洞":{
+pinyin:"kǒngdòng",
+es:"abertura / agujero"
+},
+
+"正好":{
+pinyin:"zhènghǎo",
+es:"justo / precisamente"
+},
+
+"柔和":{
+pinyin:"róuhé",
+es:"suave / delicado"
+},
+
+"暖光":{
+pinyin:"nuǎnguāng",
+es:"luz cálida"
+},
+
+"柔顺":{
+pinyin:"róushùn",
+es:"suave y liso"
+},
+
+"工作服":{
+pinyin:"gōngzuòfú",
+es:"ropa de trabajo / uniforme de trabajo"
+},
+
+"领口":{
+pinyin:"lǐngkǒu",
+es:"cuello de una prenda"
+},
+
+"白皙":{
+pinyin:"báixī",
+es:"de piel clara / pálido y fino"
+},
+
+"脖颈":{
+pinyin:"bógěng",
+es:"cuello / nuca"
+},
+
+"狂暴":{
+pinyin:"kuángbào",
+es:"violento / furioso"
+},
+
+"雷雨":{
+pinyin:"léiyǔ",
+es:"tormenta eléctrica"
+},
+
+"废墟":{
+pinyin:"fèixū",
+es:"ruinas"
+},
+
+"娇柔":{
+pinyin:"jiāoróu",
+es:"delicado / tierno / frágil"
+},
+
+"干活儿":{
+pinyin:"gàn huór",
+es:"trabajar / ponerse a trabajar"
+},
+
+"吓了一跳":{
+pinyin:"xià le yí tiào",
+es:"llevarse un susto"
+},
+
+"纳米研究中心":{
+pinyin:"nàmǐ yánjiū zhōngxīn",
+es:"Centro de Investigación de Nanotecnología"
+},
+
+"主任":{
+pinyin:"zhǔrèn",
+es:"director / jefe de departamento"
+},
+
+
+/* ---------- PALABRAS GENERALES ---------- */
+
+"一个":{
+pinyin:"yí ge",
+es:"un / una"
+},
+
+"两个":{
+pinyin:"liǎng ge",
+es:"dos"
+},
+
+"几个":{
+pinyin:"jǐ ge",
+es:"varios / cuántos"
+},
+
+"这里":{
+pinyin:"zhèlǐ",
+es:"aquí"
+},
+
+"那里":{
+pinyin:"nàlǐ",
+es:"allí"
+},
+
+"他们":{
+pinyin:"tāmen",
+es:"ellos"
+},
+
+"我们":{
+pinyin:"wǒmen",
+es:"nosotros"
+},
+
+"你们":{
+pinyin:"nǐmen",
+es:"ustedes"
+},
+
+"什么":{
+pinyin:"shénme",
+es:"qué"
+},
+
+"怎么":{
+pinyin:"zěnme",
+es:"cómo"
+},
+
+"为什么":{
+pinyin:"wèishénme",
+es:"por qué"
+},
+
+"已经":{
+pinyin:"yǐjīng",
+es:"ya"
+},
+
+"没有":{
+pinyin:"méiyǒu",
+es:"no tener / no haber"
+},
+
+"不能":{
+pinyin:"bùnéng",
+es:"no poder"
+},
+
+"知道":{
+pinyin:"zhīdào",
+es:"saber / conocer"
+},
+
+"看到":{
+pinyin:"kàndào",
+es:"ver"
+},
+
+"听说":{
+pinyin:"tīngshuō",
+es:"haber oído decir / según se dice"
+},
+
+"研究":{
+pinyin:"yánjiū",
+es:"investigar / investigación"
+},
+
+"工作":{
+pinyin:"gōngzuò",
+es:"trabajo / trabajar"
+},
+
+"方面":{
+pinyin:"fāngmiàn",
+es:"aspecto / ámbito"
+},
+
+"其他":{
+pinyin:"qítā",
+es:"otros / demás"
+},
+
+"现在":{
+pinyin:"xiànzài",
+es:"ahora"
+},
+
+"以前":{
+pinyin:"yǐqián",
+es:"antes / anteriormente"
+},
+
+"以后":{
+pinyin:"yǐhòu",
+es:"después / en el futuro"
+},
+
+"时候":{
+pinyin:"shíhou",
+es:"momento / cuando"
+},
+
+"事情":{
+pinyin:"shìqing",
+es:"asunto / cosa"
+},
+
+"人员":{
+pinyin:"rényuán",
+es:"personal / miembros"
+},
+
+"部分":{
+pinyin:"bùfen",
+es:"parte"
+},
+
+"一样":{
+pinyin:"yíyàng",
+es:"igual / de la misma manera"
+},
+
+"不同":{
+pinyin:"bùtóng",
+es:"diferente"
+},
+
+"简单":{
+pinyin:"jiǎndān",
+es:"simple / sencillo"
+},
+
+"关系":{
+pinyin:"guānxi",
+es:"relación"
+},
+
+"告诉":{
+pinyin:"gàosu",
+es:"decir / informar"
+},
+
+"注意到":{
+pinyin:"zhùyì dào",
+es:"notar / darse cuenta"
+},
+
+"感觉":{
+pinyin:"gǎnjué",
+es:"sentir / sensación"
+},
+
+"当然":{
+pinyin:"dāngrán",
+es:"por supuesto"
+},
+
+"首先":{
+pinyin:"shǒuxiān",
+es:"primero / en primer lugar"
+},
+
+"更加":{
+pinyin:"gèngjiā",
+es:"todavía más"
+}
+
+};
+
+
+/* ==================================================
+   ALMACENAMIENTO
+================================================== */
+
+const STORAGE_KEY="chineseReaderGlossaryV5";
+const AUTO_DICT_KEY="chineseReaderAutoDictionaryV1";
+const MASTERY_KEY="chineseReaderMasteryV1";
+
+let glossary=JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem("chineseReaderGlossaryV4") || "{}");
+localStorage.setItem(STORAGE_KEY,JSON.stringify(glossary));
+let autoDictionary=JSON.parse(localStorage.getItem(AUTO_DICT_KEY) || "{}");
+let mastery=JSON.parse(localStorage.getItem(MASTERY_KEY) || "{}");
+let currentFirebaseUser=null;
+let cloudReady=false;
+let cloudSaveTimer=null;
+
+let page=
+Number(
+localStorage.getItem("readerPageV4") || 0
+);
+
+if(page<0 || page>=readings.length){
+page=0;
+}
+
+let activeWord=null;
+let mode="multiple";
+let currentWord=null;
+let reviewPage="all";
+let practiceQueue=[];
+let practiceQueueKey="";
+let lastAskedWord="";
+
+
+/* ==================================================
+   ORDEN DEL DICCIONARIO
+================================================== */
+
+const dictionaryKeys=
+Object.keys(dictionary)
+.sort((a,b)=>b.length-a.length);
+
+
+/* ==================================================
+   CHINO
+================================================== */
+
+function isHan(char){
+return /[\u3400-\u9FFF]/.test(char);
+}
+
+
+/* ==================================================
+   TOKENIZADOR
+
+   Si una palabra no está todavía en el diccionario,
+   aparece como texto normal.
+   NUNCA muestra "Traducción pendiente".
+================================================== */
+
+function tokenize(text){
+
+let result=[];
+let i=0;
+const segmenter=(typeof Intl!=="undefined" && Intl.Segmenter)
+? new Intl.Segmenter("zh-CN",{granularity:"word"})
+: null;
+
+while(i<text.length){
+  if(text[i]==="\n"){ result.push({text:"\n",known:false}); i++; continue; }
+  if(!isHan(text[i])){ result.push({text:text[i],known:false}); i++; continue; }
+
+  let match=null;
+  for(const key of dictionaryKeys){
+    if(text.startsWith(key,i)){ match=key; break; }
+  }
+
+  if(match){
+    result.push({text:match,known:true,auto:false});
+    i+=match.length;
+    continue;
+  }
+
+  let end=i;
+  while(end<text.length && isHan(text[end])) end++;
+  const run=text.slice(i,end);
+  let piece=run[0];
+  if(segmenter){
+    const first=segmenter.segment(run)[Symbol.iterator]().next().value;
+    if(first && first.segment) piece=first.segment;
+  }
+  result.push({text:piece,known:true,auto:true});
+  i+=piece.length;
+}
+
+return result;
+}
+
+function getWordData(word){
+  return dictionary[word] || autoDictionary[word] || null;
+}
+
+async function fetchAutoTranslation(word){
+  if(autoDictionary[word]) return autoDictionary[word];
+  const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=es&dt=t&q="+encodeURIComponent(word);
+  const response=await fetch(url);
+  if(!response.ok) throw new Error("No se pudo traducir");
+  const data=await response.json();
+  const translation=(data && data[0] ? data[0].filter(Boolean).map(x=>x && x[0] ? x[0] : "").join("") : "").trim();
+  if(!translation) throw new Error("Traducción vacía");
+  autoDictionary[word]={pinyin:"",es:translation,auto:true};
+  localStorage.setItem(AUTO_DICT_KEY,JSON.stringify(autoDictionary));
+  return autoDictionary[word];
+}
+
+/* ==================================================
+   RENDER DE LECTURA
+================================================== */
+
+function renderReading(){
+
+const data=readings[page];
+
+document.getElementById("pageNumber").textContent=
+"Página "+data.page;
+
+document.getElementById("pageIndicator").textContent=
+`${page+1} de ${readings.length}`;
+
+document.getElementById("bottomPageIndicator").textContent=
+`${page+1} de ${readings.length}`;
+
+document.getElementById("prevBtn").disabled=
+page===0;
+
+document.getElementById("bottomPrevBtn").disabled=
+page===0;
+
+document.getElementById("nextBtn").disabled=
+page===readings.length-1;
+
+document.getElementById("bottomNextBtn").disabled=
+page===readings.length-1;
+
+const reader=
+document.getElementById("reader");
+
+reader.innerHTML="";
+
+tokenize(data.text).forEach(token=>{
+
+if(token.text==="\n"){
+
+reader.appendChild(
+document.createElement("br")
+);
+
+return;
+
+}
+
+if(!token.known){
+
+reader.appendChild(
+document.createTextNode(token.text)
+);
+
+return;
+
+}
+
+const span=
+document.createElement("span");
+
+span.className="word";
+span.textContent=token.text;
+span.dataset.word=token.text;
+
+const info=getWordData(token.text);
+
+if(token.auto){ span.classList.add("auto-word"); }
+
+if(info && info.type && info.type.startsWith("成语")){
+span.classList.add("chengyu");
+}
+
+if(glossary[token.text]){
+span.classList.add("saved");
+}
+
+span.addEventListener(
+"mouseenter",
+event=>{
+openTooltip(
+token.text,
+event
+);
+}
+);
+
+span.addEventListener(
+"dblclick",
+event=>{
+
+event.preventDefault();
+
+saveWord(
+token.text
+);
+
+}
+);
+
+span.addEventListener(
+"click",
+event=>{
+
+if(
+window.matchMedia("(hover:none)").matches
+){
+
+event.stopPropagation();
+
+openTooltip(
+token.text,
+event
+);
+
+}
+
+}
+);
+
+reader.appendChild(span);
+
+});
+
+}
+
+
+/* ==================================================
+   PÁGINAS
+================================================== */
+
+function changePage(direction){
+
+const next=
+page+direction;
+
+if(
+next<0 ||
+next>=readings.length
+){
+return;
+}
+
+page=next;
+
+localStorage.setItem("readerPageV4",page);
+scheduleCloudSave();
+
+closeTooltip();
+
+renderReading();
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+
+/* ==================================================
+   TOOLTIP
+================================================== */
+
+async function openTooltip(word,event){
+
+activeWord=word;
+const tooltip=document.getElementById("tooltip");
+document.getElementById("tooltipWord").textContent=word;
+document.getElementById("tooltipPinyin").textContent="";
+document.getElementById("tooltipTranslation").textContent="Buscando traducción…";
+document.getElementById("tooltipType").style.display="none";
+document.getElementById("tooltipNote").style.display="none";
+document.getElementById("tooltipNote").textContent="";
+tooltip.style.display="block";
+updateSaveButton();
+
+if(!window.matchMedia("(hover:none)").matches){
+  let x=event.clientX+15, y=event.clientY+15;
+  if(x+320>innerWidth) x=event.clientX-320;
+  if(y+220>innerHeight) y=event.clientY-220;
+  tooltip.style.left=Math.max(8,x)+"px";
+  tooltip.style.top=Math.max(8,y)+"px";
+}
+
+let data=getWordData(word);
+if(!data){
+  try{ data=await fetchAutoTranslation(word); }
+  catch(e){
+    if(activeWord===word){
+      document.getElementById("tooltipTranslation").textContent="Sin conexión: toca esta palabra cuando tengas internet para descargar su traducción.";
+      document.getElementById("tooltipPinyin").textContent="Puedes escucharla con 🔊";
+    }
+    return;
+  }
+}
+if(activeWord!==word) return;
+
+document.getElementById("tooltipPinyin").textContent=data.pinyin || "Pronunciación disponible con 🔊";
+document.getElementById("tooltipTranslation").textContent=data.es || "";
+const typeBox=document.getElementById("tooltipType");
+if(data.type){ typeBox.style.display="block"; typeBox.textContent=data.type; }
+else{ typeBox.style.display="none"; typeBox.textContent=""; }
+const noteBox=document.getElementById("tooltipNote");
+if(data.note){ noteBox.style.display="block"; noteBox.textContent=data.note; }
+else{ noteBox.style.display="none"; noteBox.textContent=""; }
+updateSaveButton();
+}
+
+function closeTooltip(){
+  document.getElementById("tooltip").style.display="none";
+  activeWord=null;
+}
+
+document.getElementById("tooltipAudio").onclick=event=>{
+  event.stopPropagation();
+  if(activeWord) speakChinese(activeWord);
+};
+
+document.getElementById("tooltipSave").onclick=async event=>{
+  event.stopPropagation();
+  if(!activeWord) return;
+  if(!getWordData(activeWord)){
+    try{ await fetchAutoTranslation(activeWord); }catch(e){ return; }
+  }
+  saveWord(activeWord);
+};
+
+/* ==================================================
+   CERRAR TOOLTIP AL SALIR DE UNA PALABRA (ESCRITORIO)
+   Se mantiene abierto si el cursor entra al propio tooltip.
+================================================== */
+document.addEventListener("mousemove", event=>{
+  if(window.matchMedia("(hover:none)").matches) return;
+
+  const tooltip=document.getElementById("tooltip");
+  if(!tooltip || tooltip.style.display!=="block") return;
+
+  const target=event.target;
+  const overWord=target.closest && target.closest(".word");
+  const overTooltip=tooltip.contains(target);
+
+  if(!overWord && !overTooltip){
+    closeTooltip();
+  }
+});
+
+
+/* ==================================================
+   AUDIO
+================================================== */
+
+let chineseVoices=[];
+
+function loadVoices(){
+
+if(!("speechSynthesis" in window)){
+return;
+}
+
+chineseVoices=
+speechSynthesis
+.getVoices()
+.filter(
+voice=>
+voice.lang &&
+voice.lang.toLowerCase().startsWith("zh")
+);
+
+}
+
+if("speechSynthesis" in window){
+
+loadVoices();
+
+speechSynthesis.onvoiceschanged=
+loadVoices;
+
+}
+
+function speakChinese(text){
+
+if(!("speechSynthesis" in window)){
+
+alert(
+"Tu navegador no tiene síntesis de voz."
+);
+
+return;
+
+}
+
+speechSynthesis.cancel();
+
+const utterance=
+new SpeechSynthesisUtterance(
+text
+);
+
+utterance.lang=
+"zh-CN";
+
+utterance.rate=
+0.72;
+
+const preferredVoice=
+
+chineseVoices.find(
+voice=>
+voice.lang.toLowerCase()==="zh-cn"
+)
+
+||
+
+chineseVoices.find(
+voice=>
+voice.lang.toLowerCase().startsWith("zh")
+);
+
+if(preferredVoice){
+
+utterance.voice=
+preferredVoice;
+
+}
+
+speechSynthesis.speak(
+utterance
+);
+
+}
+
+
+/* ==================================================
+   GLOSARIO
+================================================== */
+
+function saveWord(word){
+  const data=getWordData(word);
+  if(!data || !data.es) return;
+  const pageNumber=readings[page].page;
+  const existingPages=Array.isArray(glossary[word]?.pages) ? glossary[word].pages : [];
+  glossary[word]={
+    word,
+    pinyin:data.pinyin || "",
+    translation:data.es,
+    type:data.type || "",
+    pages:[...new Set([...existingPages,pageNumber])].sort((a,b)=>a-b)
+  };
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(glossary));
+  scheduleCloudSave();
+  renderGlossary();renderReading();updateCount();populateReviewPageSelect();updateSaveButton();
+}
+
+function deleteWord(word){
+  delete glossary[word];
+  Object.keys(mastery).forEach(practiceMode=>{
+    if(mastery[practiceMode]) delete mastery[practiceMode][word];
+  });
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(glossary));
+  localStorage.setItem(MASTERY_KEY,JSON.stringify(mastery));
+  scheduleCloudSave();
+  renderGlossary();renderReading();updateCount();populateReviewPageSelect();
+}
+
+function typeBadgeClass(type){
+  const t=String(type||"");
+  if(t.startsWith("口语表达")) return "type-badge colloquial";
+  if(t.startsWith("常用表达")) return "type-badge expression";
+  if(t.startsWith("固定搭配")) return "type-badge collocation";
+  return "type-badge";
+}
+
+function renderGlossary(){
+
+const box=
+document.getElementById(
+"glossaryList"
+);
+
+const words=
+Object.values(glossary);
+
+if(!words.length){
+
+box.innerHTML=`
+<p style="color:#888">
+Todavía no has guardado palabras.
+</p>
+`;
+
+return;
+
+}
+
+box.innerHTML="";
+
+words.forEach(item=>{
+
+const card=
+document.createElement("div");
+
+card.className=
+"glossary-card";
+
+card.innerHTML=`
+
+<div>
+
+<div class="glossary-word">
+${item.word}
+</div>
+
+<div class="glossary-pinyin">
+${item.pinyin}
+</div>
+
+<div class="glossary-translation">
+${item.translation}
+</div>
+
+${
+item.type
+?
+`<span class="${typeBadgeClass(item.type)}">${item.type}</span>`
+:
+""
+}
+
+</div>
+
+<div>
+
+<button
+class="small-icon-btn audio"
+title="Escuchar"
+>
+🔊
+</button>
+
+<button
+class="small-icon-btn delete"
+title="Eliminar"
+>
+×
+</button>
+
+</div>
+
+`;
+
+card
+.querySelector(".audio")
+.onclick=
+()=>{
+
+speakChinese(
+item.word
+);
+
+};
+
+card
+.querySelector(".delete")
+.onclick=
+()=>{
+
+deleteWord(
+item.word
+);
+
+};
+
+box.appendChild(
+card
+);
+
+});
+
+}
+
+function updateCount(){
+
+document.getElementById(
+"glossaryCount"
+).textContent=
+Object.keys(glossary).length;
+
+}
+
+function updateSaveButton(){
+
+if(!activeWord){
+return;
+}
+
+const btn=
+document.getElementById(
+"tooltipSave"
+);
+
+btn.textContent=
+glossary[activeWord]
+?
+"✓ Ya está en el glosario"
+:
+"+ Guardar en glosario";
+
+}
+
+
+/* ==================================================
+   VISTAS
+================================================== */
+
+function showView(
+id,
+button
+){
+
+document
+.querySelectorAll(".view")
+.forEach(
+view=>
+view.classList.remove("active")
+);
+
+document
+.getElementById(id)
+.classList.add("active");
+
+document
+.querySelectorAll(".nav-btn")
+.forEach(
+btn=>
+btn.classList.remove("active")
+);
+
+if(button){
+button.classList.add("active");
+}
+
+if(id==="reviewView"){
+document.body.classList.add("review-focus");
+populateReviewPageSelect();
+updateReviewModeTitle();
+newQuestion();
+}else{
+document.body.classList.remove("review-focus");
+closeReviewMenu();
+}
+
+}
+
+function toggleReviewMenu(){
+  document.getElementById("reviewMenu").classList.toggle("open");
+  document.getElementById("reviewMenuBackdrop").classList.toggle("open");
+}
+
+function closeReviewMenu(){
+  const menu=document.getElementById("reviewMenu");
+  const backdrop=document.getElementById("reviewMenuBackdrop");
+  if(menu) menu.classList.remove("open");
+  if(backdrop) backdrop.classList.remove("open");
+}
+
+function exitReviewToReading(){
+  closeReviewMenu();
+  const readingBtn=[...document.querySelectorAll(".nav-btn")].find(btn=>btn.textContent.includes("Lectura"));
+  showView("readerView",readingBtn || null);
+}
+
+function updateReviewModeTitle(){
+  const labels={
+    flashcards:"🃏 Tarjetas",
+    multiple:"🎯 Opción múltiple",
+    typing:"⌨️ Escribir",
+    listening:"🎧 Escuchar",
+    pronunciation:"🎙️ Pronunciar",
+    character:"✍️ Caracteres",
+    wordWriting:"🀄 Palabras",
+    wordList:"📋 Lista de palabras"
+  };
+  const title=document.getElementById("reviewModeTitle");
+  const pageLabel=mode==="wordList" || reviewPage==="all" ? "Todas" : `Página ${reviewPage}`;
+  if(title) title.textContent=`${labels[mode] || "🧠 Repasar"} · ${pageLabel}`;
+}
+
+
+/* ==================================================
+   REPASO
+================================================== */
+
+function setMode(
+newMode,
+button
+){
+
+mode=newMode;
+practiceQueue=[];
+practiceQueueKey="";
+lastAskedWord="";
+
+document
+.querySelectorAll("#reviewMenu .mode-btn")
+.forEach(
+btn=>
+btn.classList.remove("active")
+);
+
+if(button){
+button.classList.add("active");
+}
+
+updateReviewModeTitle();
+closeReviewMenu();
+newQuestion();
+
+}
+
+function inferredPagesForWord(word){
+  return readings
+    .filter(reading=>reading.text.includes(word))
+    .map(reading=>reading.page);
+}
+
+function normalizeGlossaryPages(){
+  let changed=false;
+  Object.values(glossary).forEach(item=>{
+    if(!Array.isArray(item.pages) || !item.pages.length){
+      item.pages=inferredPagesForWord(item.word);
+      changed=true;
+    }
+  });
+  if(changed) localStorage.setItem(STORAGE_KEY,JSON.stringify(glossary));
+}
+
+function populateReviewPageSelect(){
+  const select=document.getElementById("reviewPageSelect");
+  if(!select) return;
+
+  // Mostrar siempre todas las páginas disponibles en la lectura,
+  // aunque todavía no haya palabras guardadas de alguna de ellas.
+  const availablePages=[...new Set(readings.map(reading=>reading.page))].sort((a,b)=>a-b);
+
+  select.innerHTML=`<option value="all">Todas las páginas</option>`+
+    availablePages.map(pageNumber=>`<option value="${pageNumber}">Página ${pageNumber}</option>`).join("");
+
+  if(reviewPage!=="all" && !availablePages.includes(Number(reviewPage))) reviewPage="all";
+  select.value=reviewPage;
+}
+
+function setReviewPage(value){
+  reviewPage=value;
+  currentWord=null;
+  practiceQueue=[];
+  practiceQueueKey="";
+  lastAskedWord="";
+  updateReviewModeTitle();
+  closeReviewMenu();
+  newQuestion();
+}
+
+function glossaryArray(){
+  const words=Object.values(glossary);
+  if(reviewPage==="all") return words;
+  const selectedPage=Number(reviewPage);
+  return words.filter(item=>{
+    const pages=Array.isArray(item.pages) && item.pages.length ? item.pages : inferredPagesForWord(item.word);
+    return pages.includes(selectedPage);
+  });
+}
+
+function currentSessionWords(practiceMode=mode){
+  const words=glossaryArray();
+  if(practiceMode==="character") return words.filter(item=>[...item.word].some(isHan));
+  return words;
+}
+
+const PRACTICE_MODES=["multiple","typing","listening","pronunciation","character","wordWriting"];
+const PRACTICE_LABELS={
+  multiple:"Opción múltiple",
+  typing:"Escritura",
+  listening:"Solo audio",
+  pronunciation:"Pronunciación",
+  character:"Caracteres",
+  wordWriting:"Palabras"
+};
+
+function masteryScore(word,practiceMode=mode){
+  return Math.max(0,Math.min(2,Number(mastery?.[practiceMode]?.[word]) || 0));
+}
+
+function masteryDots(word,practiceMode=mode){
+  const score=masteryScore(word,practiceMode);
+  return `<span class="mastery-dots" aria-label="${score} de 2 aciertos">`+
+    `<span class="mastery-dot ${score>=1 ? "filled" : ""}"></span>`+
+    `<span class="mastery-dot ${score>=2 ? "filled" : ""}"></span>`+
+    `</span>`;
+}
+
+function saveMastery(){
+  localStorage.setItem(MASTERY_KEY,JSON.stringify(mastery));
+  scheduleCloudSave();
+}
+
+function sessionStats(words=null,practiceMode=mode){
+  if(!words) words=currentSessionWords(practiceMode);
+  const dominated=words.filter(item=>masteryScore(item.word,practiceMode)>=2).length;
+  return {dominated,total:words.length,finished:words.length>0 && dominated===words.length};
+}
+
+function practiceStatusHTML(words=null,practiceMode=mode){
+  if(!words) words=currentSessionWords(practiceMode);
+  const stats=sessionStats(words,practiceMode);
+  return `<div class="practice-status"><span>Progreso: ${stats.dominated} de ${stats.total} palabras dominadas</span>`+
+    `<span>${PRACTICE_LABELS[practiceMode] || "Práctica"}</span></div>`;
+}
+
+function currentWordProgressHTML(word=currentWord,practiceMode=mode){
+  if(!word) return "";
+  return `<div class="current-word-progress">${masteryDots(word.word,practiceMode)}</div>`;
+}
+
+function recordAnswer(ok){
+  if(!currentWord || !PRACTICE_MODES.includes(mode)) return;
+  mastery[mode]=mastery[mode] || {};
+  mastery[mode][currentWord.word]=ok ? Math.min(2,masteryScore(currentWord.word,mode)+1) : 0;
+  if(masteryScore(currentWord.word,mode)<2 && !practiceQueue.includes(currentWord.word)){
+    practiceQueue.push(currentWord.word);
+  }
+  saveMastery();
+  renderGlossary();
+}
+
+function resetModeProgress(){
+  if(!PRACTICE_MODES.includes(mode)) return;
+  if(!confirm(`¿Reiniciar el progreso de ${PRACTICE_LABELS[mode]}?`)) return;
+  mastery[mode]={};
+  saveMastery();
+  practiceQueue=[];
+  practiceQueueKey="";
+  lastAskedWord="";
+  newQuestion();
+}
+
+function nextPracticeWord(words){
+  const key=`${mode}|${reviewPage}|${words.map(item=>item.word).sort().join("|")}`;
+  if(practiceQueueKey!==key){
+    practiceQueueKey=key;
+    practiceQueue=[];
+    lastAskedWord="";
+  }
+  const incomplete=words.filter(item=>masteryScore(item.word,mode)<2);
+  if(incomplete.length===1 && words.length>1 && lastAskedWord===incomplete[0].word){
+    const spacers=words.filter(item=>item.word!==lastAskedWord);
+    const spacer=random(spacers);
+    lastAskedWord=spacer.word;
+    return spacer;
+  }
+  const validWords=new Set(incomplete.map(item=>item.word));
+  practiceQueue=practiceQueue.filter(word=>validWords.has(word));
+  if(!practiceQueue.length) practiceQueue=shuffle(incomplete.map(item=>item.word));
+  if(practiceQueue.length>1 && practiceQueue[0]===lastAskedWord){
+    const alternate=practiceQueue.findIndex(word=>word!==lastAskedWord);
+    if(alternate>0) [practiceQueue[0],practiceQueue[alternate]]=[practiceQueue[alternate],practiceQueue[0]];
+  }
+  const selectedWord=practiceQueue.shift();
+  lastAskedWord=selectedWord || "";
+  return incomplete.find(item=>item.word===selectedWord) || null;
+}
+
+function showFinished(words){
+  document.getElementById("quizCard").innerHTML=`
+    <div class="completion-card">
+      <div class="completion-icon">🏆</div>
+      <h2>Actividad terminada</h2>
+      <p>Dominaste las ${words.length} palabras con dos aciertos en ${PRACTICE_LABELS[mode]}.</p>
+      ${practiceStatusHTML(words,mode)}
+      <button class="secondary-btn-wide" onclick="setMode('wordList',document.querySelector('[onclick*=wordList]'))">📋 Ver lista de palabras</button>
+      <button class="secondary-btn-wide" onclick="resetModeProgress()">↻ Practicar de nuevo</button>
+    </div>`;
+}
+
+function renderWordList(){
+  const words=Object.values(glossary).slice().sort((a,b)=>a.word.localeCompare(b.word,"zh"));
+  const card=document.getElementById("quizCard");
+  if(!words.length){
+    card.innerHTML=`<div class="completion-card"><h2>No hay palabras en esta selección</h2><p>Guarda vocabulario desde la lectura.</p></div>`;
+    return;
+  }
+  card.innerHTML=`<div class="word-list-wrap">
+    <h2 style="text-align:center">📋 Lista de palabras</h2>
+    <div class="word-list-summary">${words.length} palabras · el progreso se guarda por modalidad</div>
+    <div class="word-list-grid">${words.map(item=>{
+      const pages=(Array.isArray(item.pages)&&item.pages.length ? item.pages : inferredPagesForWord(item.word));
+      const completedModes=PRACTICE_MODES.filter(practiceMode=>masteryScore(item.word,practiceMode)>=2).length;
+      return `<article class="word-list-card">
+        <div class="word-list-head"><div><div class="word-list-word">${item.word}</div><div>${item.pinyin || ""}</div></div>
+        ${completedModes===PRACTICE_MODES.length ? '<span class="word-complete-badge">DOMINADA</span>' : ""}</div>
+        <div class="word-list-translation">${item.translation}</div>
+        <div class="word-list-page">${pages.length ? `Página${pages.length>1?"s":""} ${pages.join(", ")}` : "Página sin identificar"}</div>
+        <div class="word-list-progress">${PRACTICE_MODES.map(practiceMode=>
+          `<div class="word-progress-row"><span>${PRACTICE_LABELS[practiceMode]}</span>${masteryDots(item.word,practiceMode)}</div>`
+        ).join("")}</div>
+      </article>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function random(array){
+
+return array[
+Math.floor(
+Math.random()*array.length
+)
+];
+
+}
+
+function shuffle(array){
+
+const result=[
+...array
+];
+
+for(
+let i=result.length-1;
+i>0;
+i--
+){
+
+const j=
+Math.floor(
+Math.random()*(i+1)
+);
+
+[
+result[i],
+result[j]
+]=[
+result[j],
+result[i]
+];
+
+}
+
+return result;
+
+}
+
+
+/* ==================================================
+   NUEVA PREGUNTA
+================================================== */
+
+function newQuestion(){
+
+const words=
+currentSessionWords();
+
+const card=
+document.getElementById(
+"quizCard"
+);
+
+if(!words.length){
+
+card.innerHTML=`
+
+<div style="
+text-align:center;
+padding:50px
+">
+
+<h2>${reviewPage==="all" ? "Tu glosario está vacío" : `No hay vocabulario guardado de la página ${reviewPage}`}</h2>
+
+<p>
+${reviewPage==="all" ? "Guarda palabras desde la lectura para comenzar." : "Vuelve a esa página, guarda las palabras que quieras estudiar e inténtalo de nuevo."}
+</p>
+
+</div>
+`;
+
+return;
+
+}
+
+if(mode==="wordList"){
+renderWordList();
+return;
+}
+
+if(mode==="flashcards"){
+currentWord=nextFlashcardWord(words);
+flashcardQuestion();
+return;
+}
+
+const stats=sessionStats(words,mode);
+if(stats.finished){
+showFinished(words);
+return;
+}
+
+currentWord=nextPracticeWord(words);
+if(!currentWord){
+showFinished(words);
+return;
+}
+
+if(mode==="multiple"){
+multipleQuestion();
+}
+
+if(mode==="typing"){
+typingQuestion();
+}
+
+if(mode==="listening"){
+listeningQuestion();
+}
+
+if(mode==="pronunciation"){
+pronunciationQuestion();
+}
+
+if(mode==="character"){
+characterQuestion();
+}
+
+if(mode==="wordWriting"){
+wordWritingQuestion();
+}
+
+}
+
+
+
+/* ==================================================
+   TARJETAS
+   Frente: SOLO la palabra china.
+   Reverso: pinyin + significado.
+================================================== */
+
+let flashcardLastWord="";
+
+function nextFlashcardWord(words){
+  if(!words.length) return null;
+  let candidates=words;
+  if(words.length>1 && flashcardLastWord){
+    candidates=words.filter(item=>item.word!==flashcardLastWord);
+  }
+  const chosen=candidates[Math.floor(Math.random()*candidates.length)] || words[0];
+  flashcardLastWord=chosen.word;
+  return chosen;
+}
+
+function flashcardQuestion(){
+
+const words=reviewWords();
+const pageText=reviewPage==="all" ? "Todas las páginas" : `Página ${reviewPage}`;
+const totalCards=words.length;
+const currentIndex=currentWord ? Math.max(0,words.findIndex(item=>item.word===currentWord.word))+1 : 1;
+
+document.getElementById("quizCard").innerHTML=`
+
+<div class="flashcard-toolbar">
+  <button class="flashcard-back-btn" onclick="backToReviewMenu()">← Ir atrás</button>
+
+  <div class="flashcard-counter-box">
+    <strong>${totalCards}</strong>
+    <span>${totalCards===1 ? "tarjeta" : "tarjetas"} en ${pageText.toLowerCase()}</span>
+  </div>
+</div>
+
+<div class="flashcard-page-note">${pageText} · ${totalCards} ${totalCards===1 ? "palabra" : "palabras"} guardadas</div>
+
+<div id="studyFlashcard" class="study-flashcard" onclick="flipStudyFlashcard()">
+  <div id="flashcardFront" class="study-flashcard-face">
+    <div class="flashcard-word-only">${currentWord.word}</div>
+  </div>
+
+  <div id="flashcardBack" class="study-flashcard-face study-flashcard-back" style="display:none">
+    <div class="flashcard-back-word">${currentWord.word}</div>
+    <div class="flashcard-back-pinyin">${currentWord.pinyin || ""}</div>
+    <div class="flashcard-back-translation">${currentWord.translation || ""}</div>
+    <button class="big-audio-btn flashcard-audio" onclick="event.stopPropagation();speak('${currentWord.word.replace(/'/g,"\\'")}')">🔊</button>
+  </div>
+</div>
+
+<div class="flashcard-hint" id="flashcardHint">
+Toca la tarjeta para ver la respuesta
+</div>
+
+<div class="answer-area">
+  <button class="primary-btn" onclick="newQuestion()">Siguiente tarjeta →</button>
+</div>
+
+`;
+
+}
+
+function backToReviewMenu(){
+  const btn=document.querySelector('.review-menu-item[onclick*="multiple"]');
+  if(btn){
+    setMode("multiple",btn);
+  }else{
+    mode="multiple";
+    newQuestion();
+  }
+}
+
+function flipStudyFlashcard(){
+  const front=document.getElementById("flashcardFront");
+  const back=document.getElementById("flashcardBack");
+  const hint=document.getElementById("flashcardHint");
+  if(!front || !back) return;
+
+  const showingFront=front.style.display!=="none";
+  front.style.display=showingFront ? "none" : "flex";
+  back.style.display=showingFront ? "flex" : "none";
+
+  if(hint){
+    hint.textContent=showingFront
+      ? "Toca otra vez para volver a ver solo la palabra"
+      : "Toca la tarjeta para ver la respuesta";
+  }
+}
+
+
+/* ==================================================
+   OPCIÓN MÚLTIPLE
+================================================== */
+
+function multipleQuestion(){
+
+const words=
+glossaryArray();
+
+if(words.length<2){
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+<h2 style="text-align:center">
+Guarda al menos dos palabras.
+</h2>
+`;
+
+return;
+
+}
+
+const zhToEs=
+Math.random()<0.5;
+
+const question=
+zhToEs
+?
+currentWord.word
+:
+currentWord.translation;
+
+const correct=
+zhToEs
+?
+currentWord.translation
+:
+currentWord.word;
+
+let distractors=
+words
+.filter(
+word=>
+word.word!==currentWord.word
+)
+.map(
+word=>
+zhToEs
+?
+word.translation
+:
+word.word
+);
+
+distractors=[
+...new Set(distractors)
+];
+
+distractors=
+shuffle(distractors)
+.slice(0,3);
+
+const options=
+shuffle(
+[
+correct,
+...distractors
+]
+);
+
+const card=
+document.getElementById(
+"quizCard"
+);
+
+card.innerHTML=`
+
+${practiceStatusHTML(words)}
+${currentWordProgressHTML()}
+
+<div class="question-label">
+${
+zhToEs
+?
+"¿Qué significa?"
+:
+"¿Cómo se dice en chino?"
+}
+</div>
+
+<div class="question-main">
+${question}
+</div>
+
+<div class="options">
+
+${
+
+options
+.map(
+option=>
+`
+<button class="option">
+${option}
+</button>
+`
+)
+.join("")
+
+}
+
+</div>
+
+<div id="feedback"></div>
+
+`;
+
+card
+.querySelectorAll(".option")
+.forEach(button=>{
+
+button.onclick=()=>{
+
+const chosen=
+button.textContent.trim();
+
+card
+.querySelectorAll(".option")
+.forEach(btn=>{
+
+btn.disabled=true;
+
+if(
+btn.textContent.trim()===correct
+){
+
+btn.classList.add(
+"correct"
+);
+
+}
+
+});
+
+if(chosen!==correct){
+
+button.classList.add(
+"wrong"
+);
+
+}
+
+showFeedback(
+chosen===correct,
+correct
+);
+
+};
+
+});
+
+}
+
+
+/* ==================================================
+   ESCRITURA
+================================================== */
+
+function typingQuestion(){
+
+const zhToEs=
+Math.random()<0.5;
+
+const question=
+zhToEs
+?
+currentWord.word
+:
+currentWord.translation;
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+${practiceStatusHTML()}
+${currentWordProgressHTML()}
+
+<div class="question-label">
+
+${
+zhToEs
+?
+"Escribe el significado en español"
+:
+"Escribe la palabra en chino"
+}
+
+</div>
+
+<div class="question-main">
+${question}
+</div>
+
+<div class="answer-area">
+
+<input
+id="answer"
+class="answer-input"
+autocomplete="off"
+placeholder="Escribe..."
+>
+
+<button
+class="primary-btn"
+onclick="checkTyping(${zhToEs})"
+>
+Comprobar
+</button>
+
+</div>
+
+<div id="feedback"></div>
+
+`;
+
+const input=
+document.getElementById(
+"answer"
+);
+
+input.focus();
+
+input.addEventListener(
+"keydown",
+event=>{
+
+if(event.key==="Enter"){
+checkTyping(zhToEs);
+}
+
+}
+);
+
+}
+
+function checkTyping(
+zhToEs
+){
+
+const input=
+document.getElementById(
+"answer"
+);
+
+if(!input){
+return;
+}
+
+const answer=
+input.value.trim();
+
+input.disabled=true;
+const checkButton=input.parentElement.querySelector("button");
+if(checkButton) checkButton.disabled=true;
+
+const correct=
+zhToEs
+?
+currentWord.translation
+:
+currentWord.word;
+
+let ok=false;
+
+if(zhToEs){
+
+const possibilities=
+correct
+.split(/[\/;,]/)
+.map(x=>normalize(x))
+.filter(Boolean);
+
+const normalizedAnswer=
+normalize(answer);
+
+ok=
+possibilities.some(
+possibility=>
+possibility===normalizedAnswer
+||
+(
+normalizedAnswer.length>=4 &&
+possibility.includes(
+normalizedAnswer
+)
+)
+);
+
+}else{
+
+ok=
+answer.replace(/\s+/g,"")
+===
+correct.replace(/\s+/g,"");
+
+}
+
+showFeedback(
+ok,
+correct
+);
+
+}
+
+
+/* ==================================================
+   ESCUCHAR
+================================================== */
+
+function listeningQuestion(){
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+${practiceStatusHTML()}
+
+
+<div class="question-label">
+🎧 Escucha el chino y escribe el significado
+</div>
+
+<button
+class="big-audio-btn"
+onclick="speakChinese('${escapeJS(currentWord.word)}')"
+>
+🔊
+</button>
+
+<div class="question-secondary">
+Los caracteres y el pinyin están ocultos.
+</div>
+
+<div class="answer-area">
+
+<input
+id="listenAnswer"
+class="answer-input"
+autocomplete="off"
+placeholder="Significado en español..."
+>
+
+<button
+class="primary-btn"
+onclick="checkListening()"
+>
+Comprobar
+</button>
+
+</div>
+
+<div id="feedback"></div>
+
+`;
+
+const input=
+document.getElementById(
+"listenAnswer"
+);
+
+input.focus();
+
+input.addEventListener(
+"keydown",
+event=>{
+
+if(event.key==="Enter"){
+checkListening();
+}
+
+}
+);
+
+setTimeout(
+()=>speakChinese(
+currentWord.word
+),
+300
+);
+
+}
+
+function checkListening(){
+
+const input=
+document.getElementById(
+"listenAnswer"
+);
+
+if(!input){
+return;
+}
+
+input.disabled=true;
+const checkButton=input.parentElement.querySelector("button");
+if(checkButton) checkButton.disabled=true;
+
+const answer=
+normalize(
+input.value
+);
+
+const possibilities=
+currentWord
+.translation
+.split(/[\/;,]/)
+.map(
+item=>
+normalize(item)
+)
+.filter(Boolean);
+
+const ok=
+possibilities.some(
+possibility=>
+possibility===answer
+||
+(
+answer.length>=4 &&
+possibility.includes(answer)
+)
+);
+
+recordAnswer(ok);
+
+document.getElementById(
+"feedback"
+).innerHTML=`
+
+<div
+class="feedback ${
+ok
+?
+"correct"
+:
+"wrong"
+}"
+>
+
+<strong>
+${
+ok
+?
+"✓ Correcto"
+:
+"✕ Incorrecto"
+}
+</strong>
+
+<br><br>
+${currentWord.word} ${masteryDots(currentWord.word,mode)}
+<br>
+Progreso: ${sessionStats().dominated} de ${sessionStats().total} palabras dominadas
+
+<br><br>
+
+<span style="
+font-size:30px;
+font-weight:900
+">
+${currentWord.word}
+</span>
+
+<br>
+
+${currentWord.pinyin}
+
+<br>
+
+${currentWord.translation}
+
+${
+currentWord.type
+?
+`
+<br>
+<span class="type-badge">
+${currentWord.type}
+</span>
+`
+:
+""
+}
+
+<br><br>
+
+<button
+class="primary-btn"
+onclick="speakChinese('${escapeJS(currentWord.word)}')"
+>
+🔊 Escuchar otra vez
+</button>
+
+<button
+class="primary-btn"
+onclick="newQuestion()"
+>
+Siguiente →
+</button>
+
+</div>
+`;
+
+}
+
+
+/* ==================================================
+   PRONUNCIACIÓN
+================================================== */
+
+function pronunciationQuestion(){
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+${practiceStatusHTML()}
+${currentWordProgressHTML()}
+
+<div class="question-label">
+Escucha y repite
+</div>
+
+<div class="question-main">
+${currentWord.word}
+</div>
+
+<div class="question-secondary">
+
+${currentWord.pinyin}
+
+<br>
+
+${currentWord.translation}
+
+${
+currentWord.type
+?
+`
+<br><br>
+<span class="type-badge">
+${currentWord.type}
+</span>
+`
+:
+""
+}
+
+</div>
+
+<button
+class="big-audio-btn"
+onclick="speakChinese('${escapeJS(currentWord.word)}')"
+>
+🔊
+</button>
+
+<div class="answer-area">
+
+<button
+class="primary-btn"
+onclick="selfAssessPractice(true)"
+>
+✓ La pronuncié correctamente
+</button>
+
+<button
+class="secondary-btn-wide"
+onclick="selfAssessPractice(false)"
+>
+Necesito repetirla
+</button>
+
+</div>
+
+`;
+
+setTimeout(
+()=>speakChinese(
+currentWord.word
+),
+300
+);
+
+}
+
+
+/* ==================================================
+   CARÁCTER
+================================================== */
+
+function characterQuestion(){
+
+const chars=[...currentWord.word].filter(isHan);
+
+if(!chars.length){
+  recordAnswer(false);
+  newQuestion();
+  return;
+}
+
+const selectedChar=random(chars);
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+${practiceStatusHTML()}
+${currentWordProgressHTML()}
+
+<div class="question-label">
+Copia este carácter
+</div>
+
+<div
+class="question-main"
+style="font-size:90px"
+>
+${selectedChar}
+</div>
+
+<div class="question-secondary">
+
+De la palabra:
+
+<strong>
+${currentWord.word}
+</strong>
+
+<br>
+
+${currentWord.pinyin}
+
+<br>
+
+${currentWord.translation}
+
+</div>
+
+<div class="writing-pad">
+<canvas id="writingCanvas"></canvas>
+</div>
+
+<div class="answer-area">
+
+<button
+class="primary-btn"
+onclick="clearCanvas()"
+>
+🧹 Borrar
+</button>
+
+<button
+class="primary-btn"
+onclick="selfAssessPractice(true)"
+>
+✓ Lo escribí correctamente
+</button>
+
+<button
+class="secondary-btn-wide"
+onclick="selfAssessPractice(false)"
+>
+Me equivoqué
+</button>
+
+</div>
+
+`;
+
+initCanvas();
+
+}
+
+
+/* ==================================================
+   ESCRITURA DE PALABRA
+================================================== */
+
+function wordWritingQuestion(){
+
+document.getElementById(
+"quizCard"
+).innerHTML=`
+
+${practiceStatusHTML()}
+${currentWordProgressHTML()}
+
+<div class="question-label">
+✍️ Escribe la palabra en chino
+</div>
+
+<div class="question-main handwriting-prompt">
+${currentWord.translation}
+</div>
+
+<div class="question-secondary handwriting-instructions">
+Escribe la palabra completa con el dedo, Apple Pencil, stylus o mouse.<br>
+Los caracteres y el pinyin están ocultos hasta que pulses <strong>Mostrar respuesta</strong>.
+</div>
+
+<div class="writing-pad handwriting-pad-mobile">
+<canvas id="writingCanvas"></canvas>
+</div>
+
+<div class="answer-area">
+
+<button
+class="secondary-btn-wide"
+onclick="clearCanvas()"
+>
+🧹 Borrar y volver a intentar
+</button>
+
+<button
+class="primary-btn"
+onclick="revealWord()"
+>
+👁️ Mostrar respuesta
+</button>
+
+</div>
+
+<div id="feedback"></div>
+
+`;
+
+initCanvas();
+
+}
+
+function revealWord(){
+
+document.getElementById(
+"feedback"
+).innerHTML=`
+
+<div class="feedback correct">
+
+<strong style="
+font-size:30px
+">
+${currentWord.word}
+</strong>
+
+<br>
+
+${currentWord.pinyin}
+
+<br>
+
+${currentWord.translation}
+
+${
+currentWord.type
+?
+`
+<br><br>
+<span class="type-badge">
+${currentWord.type}
+</span>
+`
+:
+""
+}
+
+<button class="primary-btn" onclick="selfAssessPractice(true)">✓ La escribí correctamente</button>
+<button class="secondary-btn-wide" onclick="selfAssessPractice(false)">Me equivoqué</button>
+
+</div>
+
+`;
+
+}
+
+function selfAssessPractice(ok){
+  recordAnswer(ok);
+  newQuestion();
+}
+
+
+/* ==================================================
+   CANVAS
+================================================== */
+
+let canvas=null;
+let ctx=null;
+let drawing=false;
+
+function initCanvas(){
+
+canvas=
+document.getElementById(
+"writingCanvas"
+);
+
+if(!canvas){
+return;
+}
+
+const rect=
+canvas.getBoundingClientRect();
+
+const ratio=
+window.devicePixelRatio || 1;
+
+canvas.width=
+Math.floor(
+rect.width*ratio
+);
+
+canvas.height=
+Math.floor(
+rect.height*ratio
+);
+
+ctx=
+canvas.getContext("2d");
+
+ctx.setTransform(
+ratio,
+0,
+0,
+ratio,
+0,
+0
+);
+
+ctx.lineWidth=8;
+ctx.lineCap="round";
+ctx.lineJoin="round";
+ctx.strokeStyle="#202124";
+
+canvas.onpointerdown=
+event=>{
+
+drawing=true;
+
+canvas.setPointerCapture(
+event.pointerId
+);
+
+const box=
+canvas.getBoundingClientRect();
+
+ctx.beginPath();
+
+ctx.moveTo(
+event.clientX-box.left,
+event.clientY-box.top
+);
+
+};
+
+canvas.onpointermove=
+event=>{
+
+if(!drawing){
+return;
+}
+
+const box=
+canvas.getBoundingClientRect();
+
+ctx.lineTo(
+event.clientX-box.left,
+event.clientY-box.top
+);
+
+ctx.stroke();
+
+};
+
+canvas.onpointerup=
+()=>{
+drawing=false;
+};
+
+canvas.onpointercancel=
+()=>{
+drawing=false;
+};
+
+}
+
+function clearCanvas(){
+
+if(
+!ctx ||
+!canvas
+){
+return;
+}
+
+ctx.save();
+
+ctx.setTransform(
+1,0,0,1,0,0
+);
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+ctx.restore();
+
+}
+
+
+/* ==================================================
+   FEEDBACK
+================================================== */
+
+function showFeedback(
+ok,
+answer
+){
+
+const feedback=
+document.getElementById(
+"feedback"
+);
+
+if(!feedback){
+return;
+}
+
+recordAnswer(ok);
+
+feedback.innerHTML=`
+
+<div
+class="feedback ${
+ok
+?
+"correct"
+:
+"wrong"
+}"
+>
+
+<strong>
+${
+ok
+?
+"✓ Correcto"
+:
+"✕ Incorrecto"
+}
+</strong>
+
+<br><br>
+${currentWord.word} ${masteryDots(currentWord.word,mode)}
+<br>
+Progreso: ${sessionStats().dominated} de ${sessionStats().total} palabras dominadas
+
+${
+ok
+?
+""
+:
+`
+<br><br>
+Respuesta:
+<strong>
+${answer}
+</strong>
+`
+}
+
+<button
+class="primary-btn"
+onclick="newQuestion()"
+>
+Siguiente →
+</button>
+
+</div>
+
+`;
+
+}
+
+
+/* ==================================================
+   NORMALIZAR ESPAÑOL
+================================================== */
+
+function normalize(text){
+
+return String(text)
+.trim()
+.toLowerCase()
+.normalize("NFD")
+.replace(
+/[\u0300-\u036f]/g,
+""
+)
+.replace(
+/[¿?¡!.,;:()"']/g,
+""
+)
+.replace(
+/\s+/g,
+" "
+);
+
+}
+
+
+/* ==================================================
+   ESCAPAR PARA JS
+================================================== */
+
+function escapeJS(text){
+
+return String(text)
+.replace(
+/\\/g,
+"\\\\"
+)
+.replace(
+/'/g,
+"\\'"
+)
+.replace(
+/\r?\n/g,
+" "
+);
+
+}
+
+
+/* ==================================================
+   CERRAR TOOLTIP EN MÓVIL
+================================================== */
+
+document.addEventListener(
+"click",
+event=>{
+
+if(
+window.matchMedia("(hover:none)").matches
+){
+
+const tooltip=
+document.getElementById(
+"tooltip"
+);
+
+if(
+tooltip.style.display==="block" &&
+!tooltip.contains(event.target) &&
+!event.target.classList.contains("word")
+){
+
+closeTooltip();
+
+}
+
+}
+
+}
+);
+
+
+/* ==================================================
+   FIREBASE + SINCRONIZACIÓN
+================================================== */
+const firebaseConfig={
+  apiKey:"AIzaSyB2rqwvXD91aI2I036yscV-_aJ9oJ0tOSc",
+  authDomain:"clases-d23c1.firebaseapp.com",
+  projectId:"clases-d23c1",
+  storageBucket:"clases-d23c1.firebasestorage.app",
+  messagingSenderId:"600762030142",
+  appId:"1:600762030142:web:1b4a5d2f63a2473a55596f"
+};
+
+let fbAuth=null,fbDb=null;
+function setSyncStatus(text){ const el=document.getElementById("syncStatus"); if(el) el.textContent=text; }
+
+function scheduleCloudSave(){
+  if(!cloudReady || !currentFirebaseUser || !fbDb) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(saveCloudProgress,500);
+}
+
+async function saveCloudProgress(){
+  if(!cloudReady || !currentFirebaseUser || !fbDb) return;
+  setSyncStatus("Sincronizando…");
+  try{
+    await fbDb.collection("users").doc(currentFirebaseUser.uid).set({
+      readerThreeBody:{glossary,page,mastery,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}
+    },{merge:true});
+    setSyncStatus("☁️ Sincronizado");
+  }catch(e){ setSyncStatus("Sin conexión · guardado local"); }
+}
+
+async function loadCloudProgress(user){
+  try{
+    const snap=await fbDb.collection("users").doc(user.uid).get();
+    const cloud=snap.exists && snap.data().readerThreeBody ? snap.data().readerThreeBody : null;
+    if(cloud){
+      glossary={...glossary,...(cloud.glossary||{})};
+      mastery={...mastery,...(cloud.mastery||{})};
+      if(Number.isInteger(cloud.page) && cloud.page>=0 && cloud.page<readings.length) page=cloud.page;
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(glossary));
+      localStorage.setItem(MASTERY_KEY,JSON.stringify(mastery));
+      localStorage.setItem("readerPageV4",page);
+    }
+    normalizeGlossaryPages();
+    renderReading();renderGlossary();updateCount();populateReviewPageSelect();
+    await saveCloudProgress();
+  }catch(e){ setSyncStatus("Sin conexión · guardado local"); }
+}
+
+function initFirebase(){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    fbAuth=firebase.auth();fbDb=firebase.firestore();
+    fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+    fbAuth.onAuthStateChanged(async user=>{
+      currentFirebaseUser=user||null;
+      cloudReady=!!user;
+      document.getElementById("accountBtn").textContent=user?"👤 "+((user.email||"").split("@")[0]||"Cuenta"):"👤 Cuenta";
+      if(user){ setSyncStatus("Cargando nube…"); await loadCloudProgress(user); }
+      else setSyncStatus("Solo en este dispositivo");
+    });
+  }catch(e){ setSyncStatus("Solo en este dispositivo"); }
+}
+
+const authOverlay=document.getElementById("authOverlay");
+document.getElementById("accountBtn").onclick=()=>{
+  if(currentFirebaseUser){
+    if(confirm("¿Cerrar sesión de esta cuenta?")) fbAuth.signOut();
+  }else authOverlay.classList.remove("hidden");
+};
+document.getElementById("authCloseBtn").onclick=()=>authOverlay.classList.add("hidden");
+document.getElementById("authLoginBtn").onclick=async()=>{
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  const status=document.getElementById("authStatus");
+  status.textContent="Entrando…";
+  try{ await fbAuth.signInWithEmailAndPassword(email,password); authOverlay.classList.add("hidden"); status.textContent=""; }
+  catch(e){ status.textContent="No se pudo iniciar sesión. Revisa correo y contraseña."; }
+};
+document.getElementById("authResetBtn").onclick=async()=>{
+  const email=document.getElementById("authEmail").value.trim();
+  const status=document.getElementById("authStatus");
+  if(!email){status.textContent="Escribe primero tu correo.";return;}
+  try{await fbAuth.sendPasswordResetEmail(email);status.textContent="Te envié el correo para restablecer la contraseña.";}
+  catch(e){status.textContent="No se pudo enviar el correo.";}
+};
+
+/* ==================================================
+   PWA / INSTALACIÓN
+================================================== */
+let deferredInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredInstallPrompt=e;document.getElementById("installAppBtn").style.display="inline-block";
+});
+document.getElementById("installAppBtn").onclick=async()=>{
+  if(!deferredInstallPrompt){ alert("En iPhone/iPad usa Compartir → Añadir a pantalla de inicio."); return; }
+  deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;document.getElementById("installAppBtn").style.display="none";
+};
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{})); }
+
+/* ==================================================
+   INICIO
+================================================== */
+normalizeGlossaryPages();
+populateReviewPageSelect();
+renderReading();
+renderGlossary();
+updateCount();
+initFirebase();
+
+</script>
+
+</body>
+</html>
